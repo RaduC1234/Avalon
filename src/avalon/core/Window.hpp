@@ -1,13 +1,19 @@
-#ifndef AVALON_WINDOW_H
-#define AVALON_WINDOW_H
+#ifndef AVALON_WINDOW_HPP
+#define AVALON_WINDOW_HPP
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
 #include <string>
 #include <iostream>
 
-#include "InputListeners.h"
+#include "InputListeners.hpp"
+#include "Utils.hpp"
+
+#include "../render/Shader.hpp"
+#include "../logic/Scene.hpp"
+
+#define DEBUG_MODE true
 
 class Window {
 private:
@@ -19,6 +25,7 @@ private:
     int width = 1080;
     int height = 1020;
     std::string title = "Avalon C++";
+    std::unique_ptr<Scene> currentScene;
 
 public:
 
@@ -45,6 +52,8 @@ private:
 
         //std::cout << "Running " << glGetString(GL_VERSION) << " of OpenGl\n";
 
+        Time::init();
+
         glfwInit();
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
@@ -69,8 +78,8 @@ private:
 
         // Make OpenGl the current context
         glfwMakeContextCurrent(glfwWindow);
-        glfwSetFramebufferSizeCallback(glfwWindow, [](GLFWwindow *window, int width, int height) {
-            glViewport(0, 0, width, height);
+        glfwSetFramebufferSizeCallback(glfwWindow, [](GLFWwindow *window, int l_width, int l_height) {
+            glViewport(0, 0, l_width, l_height);
         });
 
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -78,20 +87,51 @@ private:
             exit(1);
         }
 
+        changeScene(0);
+
+        // enable v-sync
+        glfwSwapInterval(1);
+
         glfwShowWindow(glfwWindow);
+
     }
 
     void loop() {
 
+        float beginTime = Time::getTime();
+        float endTime;
+        float dt = -1.0f;
+
+
         while (!glfwWindowShouldClose(glfwWindow)) {
+
             glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            if (dt >= 0) {
+                this->currentScene->update(dt);
+            }
+
             glfwSwapBuffers(glfwWindow);
             glfwPollEvents();
+
+            endTime = Time::getTime();
+            dt = endTime - beginTime;
+            beginTime = endTime;
+        }
+    }
+
+    void changeScene(int scene) {
+        switch (scene) {
+            case 0: {
+                this->currentScene = std::make_unique<LevelEditorScene>();
+                break;
+            }
+            case 1: {
+                this->currentScene = std::make_unique<LevelScene>();
+            }
         }
     }
 };
 
-
-#endif //AVALON_WINDOW_H
+#endif //AVALON_WINDOW_HPP
