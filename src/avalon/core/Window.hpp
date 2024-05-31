@@ -1,8 +1,8 @@
 #ifndef AVALON_WINDOW_HPP
 #define AVALON_WINDOW_HPP
 
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include <string>
 #include <iostream>
@@ -52,7 +52,7 @@ private:
 
         //std::cout << "Running " << glGetString(GL_VERSION) << " of OpenGl\n";
 
-        Time::init();
+        TimeUtils::init();
 
         glfwInit();
         glfwDefaultWindowHints();
@@ -94,18 +94,20 @@ private:
 
         glfwShowWindow(glfwWindow);
 
+        this->currentScene->init();
+
     }
 
     void loop() {
 
-        float beginTime = Time::getTime();
+        float beginTime = TimeUtils::getTime();
         float endTime;
         float dt = -1.0f;
 
 
         while (!glfwWindowShouldClose(glfwWindow)) {
 
-            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (dt >= 0) {
@@ -115,7 +117,7 @@ private:
             glfwSwapBuffers(glfwWindow);
             glfwPollEvents();
 
-            endTime = Time::getTime();
+            endTime = TimeUtils::getTime();
             dt = endTime - beginTime;
             beginTime = endTime;
         }
@@ -129,7 +131,10 @@ private:
             }
             case 1: {
                 this->currentScene = std::make_unique<LevelScene>();
+                break;
             }
+            default:
+                return;
         }
     }
 };

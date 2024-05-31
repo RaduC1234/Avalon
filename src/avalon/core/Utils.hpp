@@ -4,7 +4,7 @@
 #include <chrono>
 #include <fstream>
 
-class Time {
+class TimeUtils {
 public:
     static std::chrono::time_point<std::chrono::high_resolution_clock> timeStarted;
 
@@ -18,17 +18,20 @@ public:
         return elapsed.count();
     }
 };
+std::chrono::time_point<std::chrono::high_resolution_clock> TimeUtils::timeStarted;
 
-std::chrono::time_point<std::chrono::high_resolution_clock> Time::timeStarted = std::chrono::high_resolution_clock::now();
+class FileUtils {
 
-std::string readFile(const char* file_path) {
-    std::ifstream file(file_path, std::ios::binary);
-    std::string contents;
-    file.seekg(0, std::ios::end);
-    contents.resize(file.tellg());
-    file.seekg(0, std::ios::beg);
-    file.read(&contents[0], contents.size());
-    file.close();
-    return contents;
-}
+    static std::string fileToString(const char* file_path) {
+        std::ifstream file(file_path, std::ios::binary);
+        std::string contents;
+        file.seekg(0, std::ios::end);
+        contents.resize(file.tellg());
+        file.seekg(0, std::ios::beg);
+        file.read(&contents[0], contents.size());
+        file.close();
+        return contents;
+    }
+};
+
 #endif //AVALON_UTILS_HPP

@@ -5,18 +5,19 @@
 #include <sstream>
 #include <regex>
 
-#include "glad/glad.h"
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 class Shader {
 private:
-    unsigned int shaderID, vertexShaderID, fragmentShaderID;
+    unsigned int shaderID{}, vertexShaderID{}, fragmentShaderID{};
     bool isBeingUsed = false;
+
 public:
 
-    Shader(const std::string &filepath) {
+    explicit Shader(const std::string &filepath) {
         try {
             std::string vertexSource, fragmentSource;
 
@@ -37,7 +38,6 @@ public:
                 return;
             }
 
-
             size_t vertexEnd = content.find('\n', vertexPos) + 1;
             vertexSource = content.substr(vertexEnd, fragmentPos - vertexEnd);
 
@@ -57,6 +57,7 @@ public:
     }
 
     ~Shader() {
+        unbind();
         glDeleteProgram(shaderID);
     }
 
@@ -126,58 +127,58 @@ private:
 
 public:
 
-    void use() {
+    void bind() {
         if (!isBeingUsed) {
             glUseProgram(shaderID);
             isBeingUsed = true;
         }
     }
 
-    void detach() {
+    void unbind() {
         glUseProgram(0);
         isBeingUsed = false;
     }
 
     void uploadMat4f(const std::string &varName, const glm::mat4 &mat) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniformMatrix4fv(varLocation, 1, GL_FALSE, glm::value_ptr(mat));
     }
 
     void uploadMat3f(const std::string &varName, const glm::mat3 &mat) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniformMatrix3fv(varLocation, 1, GL_FALSE, glm::value_ptr(mat));
     }
 
     void uploadVec4f(const std::string &varName, const glm::vec4 &vec) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniform4f(varLocation, vec.x, vec.y, vec.z, vec.w);
     }
 
     void uploadVec3f(const std::string &varName, const glm::vec3 &vec) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniform3f(varLocation, vec.x, vec.y, vec.z);
     }
 
     void uploadVec2f(const std::string &varName, const glm::vec2 &vec) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniform2f(varLocation, vec.x, vec.y);
     }
 
 
     void uploadFloat(const std::string &varName, float value) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniform1f(varLocation, value);
     }
 
     void uploadInt(const std::string &varName, int value) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
-        use();
+        bind();
         glUniform1i(varLocation, value);
     }
 };

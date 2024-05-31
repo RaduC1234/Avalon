@@ -1,5 +1,5 @@
-#ifndef AVALON_GAMECOMPONENTS_HPP
-#define AVALON_GAMECOMPONENTS_HPP
+#ifndef AVALON_GAMEOBJECT_HPP
+#define AVALON_GAMEOBJECT_HPP
 
 #include <string>
 #include <memory>
@@ -9,6 +9,7 @@
 #include "Component.hpp"
 
 class GameObject {
+private:
     std::string name;
     std::vector<std::shared_ptr<Component>> components;
 
@@ -16,12 +17,10 @@ public:
     explicit GameObject(std::string name) : name(std::move(name)) {}
 
     void start() {
-
+        for (const auto& x : components) {
+            x->start();
+        }
     }
-
-public:
-
 };
 
-
-#endif //AVALON_GAMECOMPONENTS_HPP
+#endif //AVALON_GAMEOBJECT_HPP
