@@ -4,6 +4,8 @@
 #include <chrono>
 #include <fstream>
 
+#include <glm/glm.hpp>
+
 class TimeUtils {
 public:
     static std::chrono::time_point<std::chrono::high_resolution_clock> timeStarted;
@@ -22,7 +24,7 @@ std::chrono::time_point<std::chrono::high_resolution_clock> TimeUtils::timeStart
 
 class FileUtils {
 
-    static std::string fileToString(const char* file_path) {
+    static std::string fileToString(const char *file_path) {
         std::ifstream file(file_path, std::ios::binary);
         std::string contents;
         file.seekg(0, std::ios::end);
@@ -32,6 +34,12 @@ class FileUtils {
         file.close();
         return contents;
     }
+};
+
+class Transform {
+    glm::vec2 position;
+    glm::vec2 rotation;
+
 };
 
 #endif //AVALON_UTILS_HPP

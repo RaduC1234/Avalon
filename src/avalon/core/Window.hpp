@@ -16,7 +16,6 @@
 #define DEBUG_MODE true
 
 class Window {
-private:
     Window() = default;
 
     ~Window() = default;

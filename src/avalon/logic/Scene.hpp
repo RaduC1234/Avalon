@@ -8,13 +8,13 @@
 
 class Scene {
 protected:
-    std::unique_ptr<Camera> camera;
+    Camera camera;
     bool isRunning = false;
     std::vector<std::shared_ptr<GameObject>> objects;
 
 public:
-    Scene() : camera(std::make_unique<Camera>()) {
-
+    Scene() {
+        camera = Camera(-200, -300);
     }
 
     virtual ~Scene() = default;
@@ -48,10 +48,10 @@ class LevelEditorScene : public Scene {
 
     static constexpr float vertexArray[] = {
             // position                 // color
-            0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, // bottom right
-            -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, // top left
-            0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-            -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f  // bottom left
+            320.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f, // bottom right
+            0.0f, 320.0f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f, // top left
+            320.0f, 320.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
+            0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f  // bottom left
     };
 
     // must be in counter-clockwise order
@@ -68,7 +68,6 @@ public:
 
     void init() override {
         this->shader = new Shader("resources/shaders/default.glsl");
-
 
         // Copy-pasting memory from RAM to VRAM
         // Create and bind the Vertex Array Object (VAO)
@@ -105,8 +104,11 @@ public:
     }
 
     void update(float deltaTime) override {
+        camera.position.x -= deltaTime * 50.0f;
+        camera.updateViewMatrix();
 
-        shader->bind();
+        shader->uploadMat4f("uProjection", camera.getProjectionMatrix());
+        shader->uploadMat4f("uView", camera.getViewMatrix());
 
         glBindVertexArray(VAO); // Bind the VAO
 
