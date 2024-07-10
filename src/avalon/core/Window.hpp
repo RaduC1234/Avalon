@@ -10,7 +10,6 @@
 #include "InputListeners.hpp"
 #include "Utils.hpp"
 
-#include "../render/Shader.hpp"
 #include "../logic/Scene.hpp"
 
 #define DEBUG_MODE true

@@ -12,10 +12,12 @@
 
 class Shader {
 private:
-    unsigned int shaderID{}, vertexShaderID{}, fragmentShaderID{};
+    unsigned int shaderID = 0, vertexShaderID = 0, fragmentShaderID = 0;
     bool isBeingUsed = false;
 
 public:
+
+    Shader() = default;
 
     explicit Shader(const std::string &filepath) {
         try {
@@ -57,8 +59,7 @@ public:
     }
 
     ~Shader() {
-        unbind();
-        glDeleteProgram(shaderID);
+        remove();
     }
 
 private:
@@ -139,6 +140,11 @@ public:
         isBeingUsed = false;
     }
 
+    void remove() {
+        unbind();
+        glDeleteProgram(shaderID);
+    }
+
     void uploadMat4f(const std::string &varName, const glm::mat4 &mat) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
         bind();
@@ -180,6 +186,10 @@ public:
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
         bind();
         glUniform1i(varLocation, value);
+    }
+
+    void uploadTexture(const std::string &varName, int slot) {
+        uploadInt(varName, slot);
     }
 };
 

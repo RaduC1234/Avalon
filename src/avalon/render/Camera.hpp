@@ -1,6 +1,9 @@
 #ifndef AVALON_CAMERA_HPP
 #define AVALON_CAMERA_HPP
 
+#include "glm/ext/matrix_clip_space.hpp"
+#include "glm/ext/matrix_transform.hpp"
+
 #define TILES_HORIZONTALLY 40.0f
 #define TILES_VERTICALLY 21.0f
 
@@ -39,16 +42,6 @@ public:
         );
 
         return viewMatrix;
-    }
-
-    void updateViewMatrix() {
-        glm::vec3 cameraFront(0.0f, 0.0f, -1.0f);
-        glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
-        viewMatrix = glm::lookAt(
-                glm::vec3(position.x, position.y, 20.0f),
-                cameraFront + glm::vec3(position.x, position.y, 0.0f),
-                cameraUp
-        );
     }
 
     glm::mat4 getProjectionMatrix() const {

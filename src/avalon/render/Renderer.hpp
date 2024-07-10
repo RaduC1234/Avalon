@@ -1,0 +1,6 @@
+#ifndef AVALON_RENDERER_HPP
+#define AVALON_RENDERER_HPP
+
+
+
+#endif //AVALON_RENDERER_HPP

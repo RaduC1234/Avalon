@@ -1,10 +1,11 @@
 #ifndef AVALON_SCENE_HPP
 #define AVALON_SCENE_HPP
 
-#include "Component.hpp"
-#include "../logic/Scene.hpp"
 #include "../logic/GameObject.hpp"
 #include "../render/Camera.hpp"
+#include "../render/Texture.hpp"
+#include "../render/Shader.hpp"
+#include "../render/Renderer.hpp"
 
 class Scene {
 protected:
@@ -23,7 +24,7 @@ public:
 
     void start() {
         for (auto &x: objects) {
-            x->start();
+            //x->start();
         }
         isRunning = true;
     }
@@ -33,7 +34,7 @@ public:
             objects.push_back(object);
         } else {
             objects.push_back(object);
-            object->start();
+            //object->start();
         }
     }
 
@@ -43,15 +44,16 @@ public:
 
 class LevelEditorScene : public Scene {
 
-    Shader *shader;
     GLuint VAO, VBO, EBO;
+    Shader shader = Shader("resources/shaders/default.glsl");
+    Texture texture = Texture("resources/textures/Brick_Wall.png");
 
     static constexpr float vertexArray[] = {
-            // position                 // color
-            320.0f, 0.0f, 0.0f,  1.0f, 0.0f, 0.0f, 1.0f, // bottom right
-            0.0f, 320.0f, 0.0f,  0.0f, 1.0f, 0.0f, 1.0f, // top left
-            320.0f, 320.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, // top right
-            0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 0.0f, 1.0f  // bottom left
+            // position                 // color            // uv
+            400.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1, 0, // bottom right
+            0.0f, 400.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0, 1, // top left
+            400.0f, 400.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1, 1, // top right
+            0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0, 0  // bottom left
     };
 
     // must be in counter-clockwise order
@@ -62,12 +64,8 @@ class LevelEditorScene : public Scene {
 
 public:
 
-    ~LevelEditorScene() override {
-        delete shader;
-    }
-
     void init() override {
-        this->shader = new Shader("resources/shaders/default.glsl");
+        //this->shader = Shader("resources/shaders/default.glsl");
 
         // Copy-pasting memory from RAM to VRAM
         // Create and bind the Vertex Array Object (VAO)
@@ -86,15 +84,19 @@ public:
 
         int positionsSize = 3; // x, y, z
         int colorSize = 4; // r, b, g, w
-        int vertexSizeBytes = (positionsSize + colorSize) * sizeof(float);
+        int uvSize = 2;
+        int vertexSizeBytes = (positionsSize + colorSize + uvSize) * sizeof(float);
 
         // bind position on location 0
         glVertexAttribPointer(0, positionsSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) 0);
 
-
         // bind color on position 1
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void*)(positionsSize * sizeof(float)));
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, GL_FALSE, vertexSizeBytes,
+                              (void *) (positionsSize * sizeof(float)));
 
+        // bind uv on position 2
+        glVertexAttribPointer(2, uvSize, GL_FLOAT, GL_FALSE, vertexSizeBytes,
+                              (void *) ((positionsSize + colorSize) * sizeof(float)));
 
         glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind the VBO
         glBindVertexArray(0); // Unbind the VAO
@@ -103,25 +105,36 @@ public:
 
     }
 
-    void update(float deltaTime) override {
-        camera.position.x -= deltaTime * 50.0f;
-        camera.updateViewMatrix();
+        void update(float deltaTime) override {
+            //camera.position.x -= deltaTime * 50.0f;
 
-        shader->uploadMat4f("uProjection", camera.getProjectionMatrix());
-        shader->uploadMat4f("uView", camera.getViewMatrix());
+            shader.bind();
 
-        glBindVertexArray(VAO); // Bind the VAO
+            // Upload Texture
+            shader.uploadTexture("TEX_SAMPLER", 0);
+            glActiveTexture(GL_TEXTURE0);
+            texture.bind();
 
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // Draw the triangles
+            shader.uploadMat4f("uProjection", camera.getProjectionMatrix());
+            shader.uploadMat4f("uView", camera.getViewMatrix());
 
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
+            shader.uploadFloat("uTime", TimeUtils::getTime());
 
-        glBindVertexArray(0); // Unbind the VAO
-    }
+            glBindVertexArray(VAO); // Bind the VAO
+
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1);
+            glEnableVertexAttribArray(2);
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0); // Draw the triangles
+
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
+            glDisableVertexAttribArray(2);
+
+            glBindVertexArray(0); // Unbind the VAO
+        }
 };
 
 class LevelScene : public Scene {

@@ -66,19 +66,19 @@ public:
                                    getInstance().mouseButtonPressed[2];
     }
 
-    //If you wish to be notified when a mouse button is pressed or released, set a mouse button callback.
-    static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
-        if (action == GLFW_PRESS) {
-            if (button < getInstance().mouseButtonPressed.size()) {
-                getInstance().mouseButtonPressed[button] = true;
+        //If you wish to be notified when a mouse button is pressed or released, set a mouse button callback.
+        static void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
+            if (action == GLFW_PRESS) {
+                if (button < getInstance().mouseButtonPressed.size()) {
+                    getInstance().mouseButtonPressed[button] = true;
+                }
+            } else if (action == GLFW_RELEASE) {
+                if (button < getInstance().mouseButtonPressed.size()) {
+                    getInstance().mouseButtonPressed[button] = false;
+                }
+                getInstance().dragging = false;
             }
-        } else if (action == GLFW_RELEASE) {
-            if (button < getInstance().mouseButtonPressed.size()) {
-                getInstance().mouseButtonPressed[button] = false;
-            }
-            getInstance().dragging = false;
         }
-    }
 
     //If you wish to be notified when the user scrolls, whether with a mouse wheel or touchpad gesture, set a scroll callback.
     static void mouseScrollCallback(GLFWwindow* window, double xOffset, double yOffset) {

@@ -6,6 +6,21 @@
 
 #include <glm/glm.hpp>
 
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
+typedef unsigned long uint64;
+typedef unsigned long long uint128;
+
+typedef char int8;
+typedef short int16;
+typedef int int32;
+typedef long int64;
+typedef long long int128;
+
+typedef float float32;
+typedef double float64;
+
 class TimeUtils {
 public:
     static std::chrono::time_point<std::chrono::high_resolution_clock> timeStarted;
@@ -20,11 +35,12 @@ public:
         return elapsed.count();
     }
 };
+
 std::chrono::time_point<std::chrono::high_resolution_clock> TimeUtils::timeStarted;
 
 class FileUtils {
 
-    static std::string fileToString(const char *file_path) {
+    static inline std::string fileToString(const char *file_path) {
         std::ifstream file(file_path, std::ios::binary);
         std::string contents;
         file.seekg(0, std::ios::end);
@@ -34,12 +50,6 @@ class FileUtils {
         file.close();
         return contents;
     }
-};
-
-class Transform {
-    glm::vec2 position;
-    glm::vec2 rotation;
-
 };
 
 #endif //AVALON_UTILS_HPP
