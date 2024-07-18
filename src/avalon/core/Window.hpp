@@ -6,51 +6,77 @@
 
 #include <string>
 #include <iostream>
+#include <utility>
 
-#include "InputListeners.hpp"
-#include "Utils.hpp"
+#include "Core.hpp"
 
 #include "../logic/Scene.hpp"
 
-#define DEBUG_MODE true
+struct InputListeners {
+    std::vector<bool> keyPressed = std::vector<bool>(GLFW_KEY_LAST, false);
+
+    double scrollX = 0, scrollY = 0;
+    double xPos = 0, yPos = 0, lastX = 0, lastY = 0;
+    std::vector<bool> mouseButtonPressed = std::vector<bool>(GLFW_MOUSE_BUTTON_LAST, false);
+    bool dragging = false;
+
+    float getX() {
+        return (float) xPos;
+    }
+
+    float getY() {
+        return (float) yPos;
+    }
+
+    float getDX() {
+        return (float) (lastX - xPos);
+    }
+
+    float getDY() {
+        return (float) (lastY - yPos);
+    }
+
+    float getScrollX() {
+        return (float) scrollX;
+    }
+
+    float getScrollY() {
+        return (float) scrollY;
+    }
+
+    bool isDragging() {
+        return dragging;
+    }
+
+    bool mouseButtonDown(int button) {
+        if (button < mouseButtonPressed.size()) {
+            return mouseButtonPressed[button];
+        } else {
+            return false;
+        }
+    }
+};
+
+static int glfw_windowCount = 0;
 
 class Window {
-    Window() = default;
 
-    ~Window() = default;
+
+    std::string title = "Avalon C++";
+    int width;
+    int height;
+    bool vSync;
 
     GLFWwindow *glfwWindow = nullptr;
-    int width = 1080;
-    int height = 1020;
-    std::string title = "Avalon C++";
-    std::unique_ptr<Scene> currentScene;
+
+    Scope<Scene> currentScene;
+    InputListeners listener;
 
 public:
 
-    static Window &getInstance() {
-        static Window instance;
-        return instance;
-    }
+    Window(std::string  title = "Avalon Window", int width = 1920, int height = 1080, bool vSync = GLFW_TRUE) : title(std::move(title)), width(width), height(height), vSync(vSync) {
 
-    // delete copy and move constructors and assign operators
-    Window(Window const &) = delete;             // Copy construct
-    Window(Window &&) = delete;                  // Move construct
-    Window &operator=(Window const &) = delete;  // Copy assign
-    Window &operator=(Window &&) = delete;      // Move assign
-
-    void run() {
-        init();
-        loop();
-
-        glfwTerminate();
-    }
-
-private:
-    void init() {
-
-        //std::cout << "Running " << glGetString(GL_VERSION) << " of OpenGl\n";
-
-        TimeUtils::init();
+        Time::init();
 
         glfwInit();
         glfwDefaultWindowHints();
@@ -66,13 +92,87 @@ private:
             exit(1);
         }
 
-        // Set Input Callbacks - mouse
-        glfwSetCursorPosCallback(glfwWindow, MouseListener::mousePosCallback);
-        glfwSetMouseButtonCallback(glfwWindow, MouseListener::mouseButtonCallback);
-        glfwSetScrollCallback(glfwWindow, MouseListener::mouseScrollCallback);
+        glfwMakeContextCurrent(this->glfwWindow);
 
-        // Set Input Callbacks - Keyboard
-        glfwSetKeyCallback(glfwWindow, KeyListener::keyCallback);
+        glfwSetWindowUserPointer(this->glfwWindow, this);
+
+        //https://www.glfw.org/docs/3.3/input_guide.html#input_key
+
+/*            // Window Callbacks
+            glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow *window, int width, int height) {
+                Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+                //WindowResizeEvent event(width, height);
+                //data.getEventManager().publish(event);
+            });
+*/
+        glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow *window) {
+            //Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+            glfwTerminate();
+            exit(0);
+        });
+
+        // Keyboard Callbacks
+        glfwSetKeyCallback(glfwWindow, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
+            Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+            if (action == GLFW_PRESS) {
+                data.listener.keyPressed[key] = true;
+            } else if (action == GLFW_RELEASE) {
+                data.listener.keyPressed[key] = false;
+            }
+        });
+/*
+            glfwSetCharCallback(glfwWindow, [](GLFWwindow *window, unsigned int keycode) {
+                Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+                //KeyTypedEvent event(keycode);
+                //data.getEventManager().publish(event);
+            });*/
+
+        // Mouse Callbacks
+        glfwSetMouseButtonCallback(glfwWindow, [](GLFWwindow *window, int button, int action, int mods) {
+            Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+            switch (action) {
+                case GLFW_PRESS: {
+                    if (button < data.listener.mouseButtonPressed.size()) {
+                        data.listener.mouseButtonPressed[button] = true;
+                    }
+                    break;
+                }
+                case GLFW_RELEASE: {
+                    if (button < data.listener.mouseButtonPressed.size()) {
+                        data.listener.mouseButtonPressed[button] = false;
+                    }
+                    break;
+                }
+            }
+        });
+
+        glfwSetScrollCallback(glfwWindow, [](GLFWwindow *window, double xOffset, double yOffset) {
+            Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+            data.listener.scrollX = xOffset;
+            data.listener.scrollY = yOffset;
+        });
+
+        glfwSetCursorPosCallback(glfwWindow, [](GLFWwindow *window, double xPos, double yPos) {
+            Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+
+            data.listener.lastX = data.listener.xPos;
+            data.listener.lastY = data.listener.yPos;
+            data.listener.xPos = xPos;
+            data.listener.yPos = yPos;
+            data.listener.dragging = data.listener.mouseButtonPressed[0] || data.listener.mouseButtonPressed[1] ||
+                                     data.listener.mouseButtonPressed[2];
+        });
+
+
+        glfwSetFramebufferSizeCallback(glfwWindow, [](GLFWwindow *window, int l_width, int l_height) {
+            glViewport(0, 0, l_width, l_height);
+        });
 
         // Make OpenGl the current context
         glfwMakeContextCurrent(glfwWindow);
@@ -85,56 +185,25 @@ private:
             exit(1);
         }
 
-        changeScene(0);
-
         // enable v-sync
         glfwSwapInterval(1);
 
         glfwShowWindow(glfwWindow);
 
-        this->currentScene->init();
-
     }
 
-    void loop() {
-
-        float beginTime = TimeUtils::getTime();
-        float endTime;
-        float dt = -1.0f;
-
-
-        while (!glfwWindowShouldClose(glfwWindow)) {
-
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
-
-            if (dt >= 0) {
-                this->currentScene->update(dt);
-            }
-
-            glfwSwapBuffers(glfwWindow);
-            glfwPollEvents();
-
-            endTime = TimeUtils::getTime();
-            dt = endTime - beginTime;
-            beginTime = endTime;
-        }
+    ~Window() {
+        if (glfw_windowCount == 1)
+            glfwTerminate();
+        glfw_windowCount--;
     }
 
-    void changeScene(int scene) {
-        switch (scene) {
-            case 0: {
-                this->currentScene = std::make_unique<LevelEditorScene>();
-                break;
-            }
-            case 1: {
-                this->currentScene = std::make_unique<LevelScene>();
-                break;
-            }
-            default:
-                return;
-        }
+    void onUpdate() {
+        glfwPollEvents();
+        glfwSwapBuffers(glfwWindow);
     }
+
+    friend class Application;
 };
 
 #endif //AVALON_WINDOW_HPP

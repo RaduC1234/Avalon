@@ -1,5 +1,7 @@
-#include "avalon/core/Window.hpp"
+#include "Avalon.hpp"
 
 int main() {
-    Window::getInstance().run();
+    auto x = new Application();
+    x->run();
+    delete x;
 }

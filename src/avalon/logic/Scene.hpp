@@ -1,17 +1,14 @@
 #ifndef AVALON_SCENE_HPP
 #define AVALON_SCENE_HPP
 
-#include "../logic/GameObject.hpp"
-#include "../render/Camera.hpp"
-#include "../render/Texture.hpp"
-#include "../render/Shader.hpp"
-#include "../render/Renderer.hpp"
+#include "../renderer/Camera.hpp"
+#include "../renderer/Texture.hpp"
+#include "../renderer/Shader.hpp"
 
 class Scene {
 protected:
     Camera camera;
     bool isRunning = false;
-    std::vector<std::shared_ptr<GameObject>> objects;
 
 public:
     Scene() {
@@ -23,19 +20,11 @@ public:
     virtual void init() {}
 
     void start() {
-        for (auto &x: objects) {
-            //x->start();
-        }
-        isRunning = true;
+
     }
 
-    void addGameObjectToScene(const std::shared_ptr<GameObject> &object) {
-        if (!isRunning) {
-            objects.push_back(object);
-        } else {
-            objects.push_back(object);
-            //object->start();
-        }
+    void addGameObjectToScene() {
+
     }
 
     virtual void update(float deltaTime) = 0;
@@ -50,10 +39,10 @@ class LevelEditorScene : public Scene {
 
     static constexpr float vertexArray[] = {
             // position                 // color            // uv
-            400.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1, 0, // bottom right
-            0.0f, 400.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0, 1, // top left
-            400.0f, 400.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1, 1, // top right
-            0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 0, 0  // bottom left
+            400.0f, 0.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f,  1, 0, // bottom right
+            0.0f, 400.0f, 0.0f,     1.0f, 1.0f, 1.0f, 1.0f, 0, 1, // top left
+            400.0f, 400.0f, 0.0f,   1.0f, 1.0f, 1.0f, 1.0f, 1, 1, // top right
+            0.0f, 0.0f, 0.0f,       1.0f, 1.0f, 1.0f, 1.0f, 0, 0  // bottom left
     };
 
     // must be in counter-clockwise order
@@ -119,7 +108,7 @@ public:
             shader.uploadMat4f("uProjection", camera.getProjectionMatrix());
             shader.uploadMat4f("uView", camera.getViewMatrix());
 
-            shader.uploadFloat("uTime", TimeUtils::getTime());
+            shader.uploadFloat("uTime", Time::getTime());
 
             glBindVertexArray(VAO); // Bind the VAO
 

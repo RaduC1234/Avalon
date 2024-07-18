@@ -29,12 +29,10 @@ in vec2 fTexCoords;
 out vec4 color;
 
 void main() {
-    vec2 fixed_resolution = vec2(800.0, 600.0);
-    vec2 st = gl_FragCoord.xy / fixed_resolution;
-    st.x *= fixed_resolution.x / fixed_resolution.y;
+    // Sample the texture at the given texture coordinates
+    vec4 textureColor = texture(TEX_SAMPLER, fTexCoords);
 
-    vec3 color = vec3(0.);
-    color = vec3(st.x, st.y, abs(sin(uTime)));
-
-    gl_FragColor = vec4(color, 1.0);
+    // Combine the texture color with the vertex color
+    // You can use different blending techniques; here, we simply multiply them
+    color = textureColor * fColor;
 }

@@ -1,21 +1,79 @@
-/build/
+# General
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# Visual Studio
+[Bb]in/
+[Oo]bj/
+[Dd]ebug*/
+[Rr]elease*/
+x64/
+x86/
+*.dbmdl
+*.dbproj
+*.ipch/
+*.pch
+*.vcproj
+*.vcxproj*
+*.vcxproj.filters
+*.vcxproj.user
+
+# Rider
+.idea/
+
+# Xcode
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.xcworkspace
+*.xcuserstate
+
+# Sublime Text
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse
+.settings/
+.classpath
+.project
+.metadata/
 
 # IntelliJ IDEA
 .idea/
 *.iml
 *.iws
 
-# Visual Studio Code
-.vscode/
+# NetBeans
+/nbproject/private/
+/nbproject/build/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
-# Visual Studio 2022
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-*.sln.ide/
-*.dbmdl
-*.jfm
-*.VC.db
-*.VC.VC.opendb
+# Emacs
+*~
+
+# Vim
+*.swp
+
+# Atom
+.atom/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Other
+/out/
+/.vs/
+/build/

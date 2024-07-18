@@ -1,12 +1,9 @@
-#ifndef AVALON_TEXTURE_HPP
-#define AVALON_TEXTURE_HPP
+#pragma once
 
-#include <string>
-
+#include "avalon/core/Core.hpp"
 #include <glad/glad.h>
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
+#include "stb_image.h"
 
 class Texture {
 private:
@@ -55,4 +52,3 @@ public:
     }
 };
 
-#endif //AVALON_TEXTURE_HPP

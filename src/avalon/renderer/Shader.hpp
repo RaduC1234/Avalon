@@ -1,9 +1,7 @@
 #ifndef AVALON_SHADER_H
 #define AVALON_SHADER_H
 
-#include <string>
-#include <sstream>
-#include <regex>
+#include "avalon/core/Core.hpp"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
