@@ -36,7 +36,9 @@ private:
                          data);
 
         } else {
-            std::cerr << "Error loading texture: " << filePath;
+            std::stringstream ss;
+            ss << "Error loading texture: " << filePath;
+            AV_CORE_ERROR(ss.str());
         }
 
         stbi_image_free(data);

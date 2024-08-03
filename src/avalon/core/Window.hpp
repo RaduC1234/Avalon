@@ -12,51 +12,6 @@
 
 #include "../logic/Scene.hpp"
 
-struct InputListeners {
-    std::vector<bool> keyPressed = std::vector<bool>(GLFW_KEY_LAST, false);
-
-    double scrollX = 0, scrollY = 0;
-    double xPos = 0, yPos = 0, lastX = 0, lastY = 0;
-    std::vector<bool> mouseButtonPressed = std::vector<bool>(GLFW_MOUSE_BUTTON_LAST, false);
-    bool dragging = false;
-
-    float getX() {
-        return (float) xPos;
-    }
-
-    float getY() {
-        return (float) yPos;
-    }
-
-    float getDX() {
-        return (float) (lastX - xPos);
-    }
-
-    float getDY() {
-        return (float) (lastY - yPos);
-    }
-
-    float getScrollX() {
-        return (float) scrollX;
-    }
-
-    float getScrollY() {
-        return (float) scrollY;
-    }
-
-    bool isDragging() {
-        return dragging;
-    }
-
-    bool mouseButtonDown(int button) {
-        if (button < mouseButtonPressed.size()) {
-            return mouseButtonPressed[button];
-        } else {
-            return false;
-        }
-    }
-};
-
 static int glfw_windowCount = 0;
 
 class Window {
@@ -68,9 +23,9 @@ class Window {
     bool vSync;
 
     GLFWwindow *glfwWindow = nullptr;
+    InputListeners& listener = InputListeners::getInstance();
 
     Scope<Scene> currentScene;
-    InputListeners listener;
 
 public:
 

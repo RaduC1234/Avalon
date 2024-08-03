@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 
 class Transform {
-    glm::vec2 position;
-    glm::vec2 scale;
+    glm::vec2 position{0, 0};
+    glm::vec2 scale{1, 1};
 
 public:
     Transform() = default;

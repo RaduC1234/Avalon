@@ -21,7 +21,7 @@ void Application::run() {
     float dt = -1.0f;
 
     while (isRunning) {
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0863f, 0.0863f, 0.0863f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
         if (dt >= 0 && currentScene != nullptr)
