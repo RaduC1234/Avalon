@@ -9,22 +9,20 @@
 class RenderComponent : public Component {
 public:
 
-    enum class Type {
-        Quad,
-        Circle,
-        Text,
-        Line
+    enum class Shape {
+        QUAD
     };
 
+    Shape shape;
     Transform transform;
-    std::vector<float> vertexArray;
-    std::vector<float> indexArray;
+    //Texture texture;
     glm::vec4 color;
     bool isVisible;
 
 
-    RenderComponent(const Transform &transform, const glm::vec4 &color = {1.0f, 1.0f, 1.0f, 1.0f}, bool isVisible = true) : transform(transform),
+    RenderComponent(const Transform &transform, const glm::vec4 &color = {1.0f, 1.0f, 1.0f, 1.0f}, Shape shape = Shape::QUAD, bool isVisible = true) : transform(transform),
                                                                                           color(color),
+                                                                                          shape(shape),
                                                                                           isVisible(isVisible) {}
 
     ~RenderComponent() override = default;

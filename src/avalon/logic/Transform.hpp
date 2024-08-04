@@ -3,6 +3,8 @@
 
 #include <glm/glm.hpp>
 
+typedef glm::vec4 Color;
+
 class Transform {
     glm::vec2 position{0, 0};
     glm::vec2 scale{1, 1};

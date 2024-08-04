@@ -34,9 +34,15 @@ void Application::run() {
         dt = endTime - beginTime;
         beginTime = endTime;
     }
+
+    GLenum err;
+    if ((err = glGetError()) != GL_NO_ERROR) {
+        std::cerr << "OpenGL error: " << err << std::endl;
+    }
 }
 
 void Application::changeScene(Scope<Scene> scene) {
     this->currentScene = std::move(scene);
     currentScene->init();
+    currentScene->start();
 }

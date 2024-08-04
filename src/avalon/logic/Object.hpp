@@ -69,11 +69,14 @@ public:
         addComponent<RenderComponent>(transform);
     }
 
-    Object(const Object &) = delete;
-    Object &operator=(const Object &) = delete;
-    Object(Object &&) noexcept = default;
-    Object &operator=(Object &&) noexcept = default;
+    Object(std::string name, const Transform& transform, Color color) :  name(std::move(name)) {
+        addComponent<RenderComponent>(transform);
+    }
 
+    Object(Object&& other) noexcept : name(std::move(other.name)), components(std::move(other.components)) {}
+
+
+    Object(const Object& other) = delete;
     /**
      * Adds an component to the object. Note that the duplicates are not allowed.
      */
@@ -83,7 +86,7 @@ public:
     }
 
     template<typename T>
-    T *getComponent() {
+    T *getComponent() const {
         auto it = components.find(typeid(T));
 
         if (it != components.end()) {

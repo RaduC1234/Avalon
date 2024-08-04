@@ -25,4 +25,3 @@ void main() {
     // Directly use the vertex color as the output color
     color = fColor;
 }
-
