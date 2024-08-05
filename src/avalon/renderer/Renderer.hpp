@@ -48,6 +48,13 @@ public:
         elementArray.resize(maxBatchSize * 6); // 6 indices per quad
     }
 
+    ~QuadRenderBatch() {
+        if(VAO) glDeleteVertexArrays(1, &VAO);
+        if(VBO) glDeleteBuffers(1, &VBO);
+        if(EBO) glDeleteBuffers(1, &EBO);
+
+    }
+
 
     void start() {
 
