@@ -165,30 +165,42 @@ private:
 };
 
 class Renderer {
-
     int32_t maxBatchSize = 0;
     Ref<Camera> camera;
-
-    QuadRenderBatch quadBatch;
+    std::vector<QuadRenderBatch> quadBatches;
 
 public:
     Renderer() = default;
 
-    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {
-        quadBatch = QuadRenderBatch(maxBatchSize, camera);
-
-        quadBatch.start();
-
-        Object obj("Obj1", Transform(0, 0, 100, 100), Color(1.0f, 0.0f, 1.0f, 1.0f));
-        quadBatch.addSprite(*obj.getComponent<RenderComponent>());
-    }
+    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {}
 
     void add(RenderComponent& sprite) {
-
+        if (quadBatches.empty() || quadBatches.back().isFull()) {
+            quadBatches.emplace_back(maxBatchSize, camera);
+            quadBatches.back().start();
+        }
+        quadBatches.back().addSprite(sprite);
     }
 
     void render() {
-        quadBatch.render();
+        for (auto& batch : quadBatches) {
+            batch.render();
+        }
     }
 
+    void flush() {
+        quadBatches.clear();
+    }
+
+    // helper functions
+
+    void add(Object& object) {
+        add(*object.getComponent<RenderComponent>());
+    }
+
+    void addAll(std::vector<Object>& objects) {
+        for(auto &x : objects)
+            add(x);
+    }
 };
+

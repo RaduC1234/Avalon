@@ -44,14 +44,15 @@ public:
 };
 
 class LevelEditorScene : public Scene {
-
-    GLuint VAO, VBO, EBO;
-    Shader shader = Shader("resources/shaders/default.glsl");
-
 public:
 
     void init() override {
 
+        Object obj1("Obj1", Transform(150, 0, 100, 100), Color(1.0f, 0.0f, 0.0f, 1.0f));
+        Object obj2("Obj1", Transform(0, 150, 100, 100), Color(0.0f, 1.0f, 1.0f, 1.0f));
+
+        addObject(obj1);
+        addObject(obj2);
     }
 
     void update(float deltaTime) override {
@@ -67,17 +68,13 @@ public:
         if (KEY_PRESSED(GLFW_KEY_S))
             camera->position.y -= deltaTime * 200.0f;
 
-        //renderer.registerObjects(this->objects);
+        renderer.addAll(objects);
         renderer.render();
-        //renderer.flush();
-
+        renderer.flush();
 
         for (auto &x: objects) {
             x.update(deltaTime);
         }
-
-        //AV_CORE_INFO(camera->position.x);
-        //AV_CORE_INFO(camera->position.y);
     }
 };
 
