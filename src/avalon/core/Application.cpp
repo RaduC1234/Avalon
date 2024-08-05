@@ -20,6 +20,10 @@ void Application::run() {
     float endTime;
     float dt = -1.0f;
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
     while (isRunning) {
         glClearColor(0.0863f, 0.0863f, 0.0863f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);

@@ -47,6 +47,8 @@ public:
             exit(1);
         }
 
+        setWindowIcon(this->glfwWindow, "resources/textures/default.png");
+
         glfwMakeContextCurrent(this->glfwWindow);
 
         glfwSetWindowUserPointer(this->glfwWindow, this);
@@ -129,12 +131,6 @@ public:
             glViewport(0, 0, l_width, l_height);
         });
 
-        // Make OpenGl the current context
-        glfwMakeContextCurrent(glfwWindow);
-        glfwSetFramebufferSizeCallback(glfwWindow, [](GLFWwindow *window, int l_width, int l_height) {
-            glViewport(0, 0, l_width, l_height);
-        });
-
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
             std::cout << "Failed to initialize GLAD" << std::endl;
             exit(1);
@@ -159,6 +155,22 @@ public:
     }
 
     friend class Application;
+
+private:
+
+    void setWindowIcon(GLFWwindow* window, const char* iconPath) {
+        GLFWimage images[1];
+        images[0].pixels = stbi_load(iconPath, &images[0].width, &images[0].height, 0, 4); //rgba channels
+        if (images[0].pixels) {
+            glfwSetWindowIcon(window, 1, images);
+            stbi_image_free(images[0].pixels);
+        } else {
+            std::stringstream ss;
+            ss << "Error loading icon" << iconPath;
+            AV_CORE_ERROR(ss.str());
+        }
+    }
+
 };
 
 #endif //AVALON_WINDOW_HPP

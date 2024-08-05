@@ -10,8 +10,10 @@ private:
     GLuint textureID;
     int width, height, channel;
 
+    std::string filePath;
+
 public:
-    explicit Texture(const std::string& filePath) {
+    explicit Texture(const std::string& filePath) : filePath(filePath) {
         generateAndLoad(filePath.c_str());
     }
 
@@ -31,15 +33,22 @@ private:
 
         auto data = stbi_load(filePath, &width, &height, &channel, 0);
 
-        if (data && (channel == 3 || channel == 4)) {
-            glTexImage2D(GL_TEXTURE_2D, 0, (channel == 3 ? GL_RGB : GL_RGBA), width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                         data);
+        if (data) {
+            GLenum format;
+            if (channel == 1)
+                format = GL_RED;
+            else if (channel == 3)
+                format = GL_RGB;
+            else if (channel == 4)
+                format = GL_RGBA;
 
+            glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
         } else {
             std::stringstream ss;
             ss << "Error loading texture: " << filePath;
             AV_CORE_ERROR(ss.str());
         }
+
 
         stbi_image_free(data);
     }
@@ -51,6 +60,10 @@ public:
 
     void unbind() {
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    const std::string &getFilePath() const {
+        return filePath;
     }
 };
 

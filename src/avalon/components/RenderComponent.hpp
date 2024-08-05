@@ -23,10 +23,10 @@ public:
     Ref<Texture> textureRef;
 
     std::array<glm::vec2, 4> texCoords = {
-            glm::vec2(1, 1),
-            glm::vec2(1, 0),
             glm::vec2(0, 0),
-            glm::vec2(0, 1)
+            glm::vec2(0, 1),
+            glm::vec2(1, 1),
+            glm::vec2(1, 0)
     };
 
 
