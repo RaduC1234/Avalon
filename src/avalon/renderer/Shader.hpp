@@ -189,6 +189,12 @@ public:
     void uploadTexture(const std::string &varName, int slot) {
         uploadInt(varName, slot);
     }
+
+    void uploadIntArray(std::string varName, int array[]) {
+        int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
+        bind();
+        glUniform1iv(varLocation, sizeof(array) / sizeof(int), array);
+    }
 };
 
 #endif //AVALON_SHADER_H

@@ -12,11 +12,15 @@ class QuadRenderBatch {
 
     static constexpr int positionSize = 3;
     static constexpr int colorSize = 4;
+    static constexpr int texCoordsSize = 2;
+    static constexpr int texIDSize = 1;
 
     static constexpr int positionOffset = 0;
     static constexpr int colorOffset = positionOffset + positionSize * sizeof(float);
+    static constexpr int texCoordsOffset = colorOffset + colorSize * sizeof(float);
+    static constexpr int texIDOffset = texCoordsOffset + texCoordsSize * sizeof(float);
 
-    static constexpr int vertexSize = positionSize + colorSize;
+    static constexpr int vertexSize = positionSize + colorSize + texCoordsSize + texIDSize;
     static constexpr int vertexSizeBytes = vertexSize * sizeof(float);
 
     int32_t maxBatchSize = 0;
@@ -26,10 +30,13 @@ class QuadRenderBatch {
     uint32_t index = 0;
     std::vector<uint32_t> elementArray;
 
+    std::vector<Ref<Texture>> textures;
+    int texSlots[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+
     bool full = false;
 
     GLuint VAO{}, VBO{}, EBO{};
-    Shader shader = Shader("resources/shaders/default.glsl");
+    Ref<Shader> shader = AssetPool::getShader("quads.glsl");
 
 public:
 
@@ -61,13 +68,20 @@ public:
                      GL_STATIC_DRAW);
 
         // bind position on location 0
-        glVertexAttribPointer(0, positionSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) 0);
+        glVertexAttribPointer(0, positionSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) positionOffset);
         glEnableVertexAttribArray(0);
 
         // bind color on location 1
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, GL_FALSE, vertexSizeBytes,
-                              (void *) (positionSize * sizeof(float)));
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) colorOffset);
         glEnableVertexAttribArray(1);
+
+        // bind color on location 2
+        glVertexAttribPointer(2, texCoordsSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) texCoordsOffset);
+        glEnableVertexAttribArray(2);
+
+        // bind color on location 3
+        glVertexAttribPointer(3, texIDSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) texIDOffset);
+        glEnableVertexAttribArray(3);
 
 
         glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind the VBO
@@ -75,7 +89,23 @@ public:
     }
 
     void addSprite(const RenderComponent &sprite) {
+
+        int texId = 0;
+
+        if (sprite.textureRef != nullptr) {
+            if (std::find(textures.begin(), textures.end(), sprite.textureRef) == textures.end())
+                textures.push_back(sprite.textureRef);
+
+            for (int i = 0; i < textures.size(); i++) {
+                if (textures[i] == sprite.textureRef) {
+                    texId = i + 1;
+                    break;
+                }
+            }
+        }
+
         int offset = index * 4 * vertexSize;
+
 
         float xAdd = 0.0f;
         float yAdd = 0.0f;
@@ -101,26 +131,40 @@ public:
             vertexArray[offset + 2] = 0; // z
 
             // Load Color
-            vertexArray[offset + 3] = sprite.color.x;
-            vertexArray[offset + 4] = sprite.color.y;
-            vertexArray[offset + 5] = sprite.color.z;
-            vertexArray[offset + 6] = sprite.color.w;
+            vertexArray[offset + 3] = sprite.color.r;
+            vertexArray[offset + 4] = sprite.color.g;
+            vertexArray[offset + 5] = sprite.color.b;
+            vertexArray[offset + 6] = sprite.color.a;
+
+            // Load texture coordinates
+            vertexArray[offset + 7] = sprite.texCoords[i].x;
+            vertexArray[offset + 8] = sprite.texCoords[i].y;
+
+            // Load text id
+            vertexArray[offset + 9] = texId;
 
             offset += vertexSize;
         }
         index++;
 
-        if(index >= maxBatchSize)
+        if (index >= maxBatchSize)
             full = true;
 
     }
 
     void render() {
-        shader.bind();
+        shader->bind();
 
-        shader.uploadMat4f("uProjection", camera->getProjectionMatrix());
-        shader.uploadMat4f("uView", camera->getViewMatrix());
-        shader.uploadFloat("uTime", Time::getTime());
+        shader->uploadMat4f("uProjection", camera->getProjectionMatrix());
+        shader->uploadMat4f("uView", camera->getViewMatrix());
+        shader->uploadFloat("uTime", Time::getTime());
+
+        for (int i = 0; i < textures.size(); i++) {
+            glActiveTexture(GL_TEXTURE0 + i + 1);
+            textures[i]->bind();
+        }
+
+        shader->uploadIntArray("uTextures", texSlots);
 
         glBindVertexArray(VAO); // Bind the VAO
 
@@ -128,6 +172,10 @@ public:
         glBufferSubData(GL_ARRAY_BUFFER, 0, vertexArray.size() * sizeof(float), &(vertexArray[0]));
 
         glDrawElements(GL_TRIANGLES, index * 6, GL_UNSIGNED_INT, 0); // Draw the triangles for both quads
+
+        for(int i = 0; i < textures.size(); i++) {
+            textures[i]->unbind();
+        }
 
         glBindVertexArray(0); // Unbind the VAO
     }
@@ -174,7 +222,7 @@ public:
 
     Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {}
 
-    void add(RenderComponent& sprite) {
+    void add(RenderComponent &sprite) {
         if (quadBatches.empty() || quadBatches.back().isFull()) {
             quadBatches.emplace_back(maxBatchSize, camera);
             quadBatches.back().start();
@@ -183,7 +231,7 @@ public:
     }
 
     void render() {
-        for (auto& batch : quadBatches) {
+        for (auto &batch: quadBatches) {
             batch.render();
         }
     }
@@ -194,12 +242,12 @@ public:
 
     // helper functions
 
-    void add(Object& object) {
+    void add(Object &object) {
         add(*object.getComponent<RenderComponent>());
     }
 
-    void addAll(std::vector<Object>& objects) {
-        for(auto &x : objects)
+    void addAll(std::vector<Object> &objects) {
+        for (auto &x: objects)
             add(x);
     }
 };

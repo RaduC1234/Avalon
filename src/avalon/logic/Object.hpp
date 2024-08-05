@@ -65,12 +65,12 @@ public:
 
     Object() = default;
 
-    Object(std::string name, const Transform& transform) :  name(std::move(name)) {
-        addComponent<RenderComponent>(transform);
-    }
-
     Object(std::string name, const Transform& transform, Color color) :  name(std::move(name)) {
         addComponent<RenderComponent>(transform, color);
+    }
+
+    Object(std::string name, const Transform& transform, const Ref<Texture>& texture) :  name(std::move(name)) {
+        addComponent<RenderComponent>(transform, texture);
     }
 
     Object(Object&& other) noexcept : name(std::move(other.name)), components(std::move(other.components)) {}

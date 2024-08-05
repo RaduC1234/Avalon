@@ -48,8 +48,8 @@ public:
 
     void init() override {
 
-        Object obj1("Obj1", Transform(150, 0, 100, 100), Color(1.0f, 0.0f, 0.0f, 1.0f));
-        Object obj2("Obj1", Transform(0, 150, 100, 100), Color(0.0f, 1.0f, 1.0f, 1.0f));
+        Object obj1("Obj1", Transform(150, 0, 100, 100), Color(0.0f, 1.0f, 1.0f, 1.0f));
+        Object obj2("Obj1", Transform(0, 150, 100, 100), AssetPool::DEFAULT_TEXTURE());
 
         addObject(obj1);
         addObject(obj2);

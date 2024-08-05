@@ -1,9 +1,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <utility>
 
 #include "avalon/logic/Component.hpp"
-#include "avalon/logic/Transform.hpp"
+#include "avalon/logic/Object.hpp"
+#include "avalon/logic/AssetPool.hpp"
 
 
 class RenderComponent : public Component {
@@ -15,17 +17,35 @@ public:
 
     Shape shape;
     Transform transform;
-    //Texture texture;
-    glm::vec4 color;
+    Color color;
     bool isVisible;
 
+    Ref<Texture> textureRef;
 
-    RenderComponent(const Transform &transform, const glm::vec4 &color = {1.0f, 1.0f, 1.0f, 1.0f}, Shape shape = Shape::QUAD, bool isVisible = true) : transform(transform),
-                                                                                          color(color),
-                                                                                          shape(shape),
-                                                                                          isVisible(isVisible) {}
+    std::array<glm::vec2, 4> texCoords = {
+            glm::vec2(1, 1),
+            glm::vec2(1, 0),
+            glm::vec2(0, 0),
+            glm::vec2(0, 1)
+    };
+
+
+    RenderComponent(const Transform &transform, const Color color, Shape shape = Shape::QUAD,
+                    bool isVisible = true) : transform(transform),
+                                             color(color),
+                                             textureRef(nullptr),
+                                             shape(shape),
+                                             isVisible(isVisible) {}
+
+    RenderComponent(const Transform &transform, const Ref<Texture>& texture, Shape shape = Shape::QUAD,
+                    bool isVisible = true) : transform(transform),
+                                             color(Color(1.0f, 1.0f, 1.0f, 1.0f)),
+                                             textureRef(texture),
+                                             shape(shape),
+                                             isVisible(isVisible) {}
 
     ~RenderComponent() override = default;
+
 
     void start() override {
 
