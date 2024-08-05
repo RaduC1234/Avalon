@@ -70,13 +70,11 @@ public:
     }
 
     Object(std::string name, const Transform& transform, Color color) :  name(std::move(name)) {
-        addComponent<RenderComponent>(transform);
+        addComponent<RenderComponent>(transform, color);
     }
 
     Object(Object&& other) noexcept : name(std::move(other.name)), components(std::move(other.components)) {}
 
-
-    Object(const Object& other) = delete;
     /**
      * Adds an component to the object. Note that the duplicates are not allowed.
      */

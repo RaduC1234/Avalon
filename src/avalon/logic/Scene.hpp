@@ -34,7 +34,7 @@ public:
 
     virtual void update(float deltaTime) = 0;
 
-    void addObject(Object obj) {
+    void addObject(Object &obj) {
         objects.push_back(std::move(obj));
     }
 
@@ -51,7 +51,6 @@ class LevelEditorScene : public Scene {
 public:
 
     void init() override {
-        renderer.start();
 
     }
 
@@ -77,8 +76,8 @@ public:
             x.update(deltaTime);
         }
 
-        AV_CORE_INFO(camera->position.x);
-        AV_CORE_INFO(camera->position.y);
+        //AV_CORE_INFO(camera->position.x);
+        //AV_CORE_INFO(camera->position.y);
     }
 };
 

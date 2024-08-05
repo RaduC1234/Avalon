@@ -1,5 +1,4 @@
-#ifndef AVALON_CAMERA_HPP
-#define AVALON_CAMERA_HPP
+#pragma once
 
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
@@ -48,5 +47,3 @@ public:
         return this->projectionMatrix;
     }
 };
-
-#endif //AVALON_CAMERA_HPP
