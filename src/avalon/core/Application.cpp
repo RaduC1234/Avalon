@@ -4,13 +4,17 @@ Application::Application() {
 
     Log::init();
     Time::init();
-    AssetPool::init();
 
     AV_CORE_INFO("Starting application!");
 
     this->window = CreateScope<Window>("Avalon Window");
 
     changeScene(CreateScope<LevelEditorScene>());
+
+    int textureUnits;
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
+    AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
+
 
     isRunning = true;
 }
@@ -34,15 +38,14 @@ void Application::run() {
 
         this->window->onUpdate();
 
+        GLenum err;
+        if ((err = glGetError()) != GL_NO_ERROR) {
+            AV_CORE_ERROR("OpenGL error: {0}", err);
+        }
 
         endTime = Time::getTime();
         dt = endTime - beginTime;
         beginTime = endTime;
-    }
-
-    GLenum err;
-    if ((err = glGetError()) != GL_NO_ERROR) {
-        std::cerr << "OpenGL error: " << err << std::endl;
     }
 }
 

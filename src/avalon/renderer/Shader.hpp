@@ -196,10 +196,10 @@ public:
         uploadInt(varName, slot);
     }
 
-    void uploadIntArray(std::string varName, int array[]) {
+    void uploadIntArray(std::string varName, int array[], int size) {
         int varLocation = glGetUniformLocation(shaderID, &(varName[0]));
         bind();
-        glUniform1iv(varLocation, sizeof(array) / sizeof(int), array);
+        glUniform1iv(varLocation, size, array);
     }
 };
 

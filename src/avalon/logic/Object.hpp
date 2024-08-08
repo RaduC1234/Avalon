@@ -73,7 +73,7 @@ public:
         addComponent<RenderComponent>(transform, color);
     }
 
-    Object(std::string name, const Transform& transform, const Ref<Sprite>& sprite) :  name(std::move(name)) {
+    Object(std::string name, const Transform& transform, const Sprite& sprite) :  name(std::move(name)) {
         addComponent<RenderComponent>(transform, sprite);
     }
 
