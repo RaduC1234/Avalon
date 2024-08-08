@@ -1,0 +1,9 @@
+{
+  "type" : "sprite_sheet",
+  "texture" : "tilemap.png",
+  "sprite_width" : 24,
+  "sprite_height" : 24,
+  "num_x" : 20,
+  "num_y" : 9,
+  "spacing" : 0
+}

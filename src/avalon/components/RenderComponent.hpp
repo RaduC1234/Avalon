@@ -5,7 +5,7 @@
 
 #include "avalon/logic/Component.hpp"
 #include "avalon/logic/Object.hpp"
-#include "avalon/logic/AssetPool.hpp"
+#include "avalon/utils/AssetPool.hpp"
 
 
 class RenderComponent : public Component {
@@ -20,27 +20,20 @@ public:
     Color color;
     bool isVisible;
 
-    Ref<Texture> textureRef;
-
-    std::array<glm::vec2, 4> texCoords = {
-            glm::vec2(0, 0),
-            glm::vec2(0, 1),
-            glm::vec2(1, 1),
-            glm::vec2(1, 0)
-    };
+    Ref<Sprite> spriteRef;
 
 
     RenderComponent(const Transform &transform, const Color color, Shape shape = Shape::QUAD,
                     bool isVisible = true) : transform(transform),
                                              color(color),
-                                             textureRef(nullptr),
+                                             spriteRef(CreateRef<Sprite>()),
                                              shape(shape),
                                              isVisible(isVisible) {}
 
-    RenderComponent(const Transform &transform, const Ref<Texture>& texture, Shape shape = Shape::QUAD,
+    RenderComponent(const Transform &transform, const Ref<Sprite>& sprite, Shape shape = Shape::QUAD,
                     bool isVisible = true) : transform(transform),
                                              color(Color(1.0f, 1.0f, 1.0f, 1.0f)),
-                                             textureRef(texture),
+                                             spriteRef(sprite),
                                              shape(shape),
                                              isVisible(isVisible) {}
 

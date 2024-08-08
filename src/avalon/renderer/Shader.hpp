@@ -13,11 +13,13 @@ private:
     unsigned int shaderID = 0, vertexShaderID = 0, fragmentShaderID = 0;
     bool isBeingUsed = false;
 
+    std::string filePath;
+
 public:
 
     Shader() = default;
 
-    explicit Shader(const std::string &filepath) {
+    explicit Shader(const std::string &filepath) : filePath(filepath){
         try {
             std::string vertexSource, fragmentSource;
 
@@ -125,6 +127,10 @@ private:
 
 
 public:
+
+    const std::string &getFilePath() const {
+        return filePath;
+    }
 
     void bind() {
         if (!isBeingUsed) {

@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-//#include <filesystem>
+#include <filesystem>
 #include <sstream>
 #include <vector>
 #include <unordered_set>
@@ -16,7 +16,8 @@
 #include <typeindex>
 
 #include "Log.hpp"
-#include "../event/InputListeners.hpp"
+
+#include "avalon/event/InputListeners.hpp"
 
 #define BIT(x) (1 << x)
 
@@ -40,17 +41,5 @@ constexpr Ref<T> CreateRef(Args &&... args) {
 template<typename T>
 using WeakRef = std::weak_ptr<T>;
 
-class Time {
-public:
-    inline static std::chrono::time_point<std::chrono::high_resolution_clock> timeStarted;
 
-    inline static void init() {
-        timeStarted = std::chrono::high_resolution_clock::now();
-    }
 
-    inline static float getTime() {
-        auto now = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> elapsed = now - timeStarted;
-        return elapsed.count();
-    }
-};

@@ -1,8 +1,12 @@
 #pragma once
 
-#include "avalon/core/Core.hpp"
 #include "Component.hpp"
-#include "Transform.hpp"
+
+#include "avalon/core/Core.hpp"
+
+#include "avalon/renderer/Color.hpp"
+#include "avalon/renderer/Transform.hpp"
+
 #include "avalon/components/RenderComponent.hpp"
 
 /**
@@ -69,8 +73,8 @@ public:
         addComponent<RenderComponent>(transform, color);
     }
 
-    Object(std::string name, const Transform& transform, const Ref<Texture>& texture) :  name(std::move(name)) {
-        addComponent<RenderComponent>(transform, texture);
+    Object(std::string name, const Transform& transform, const Ref<Sprite>& sprite) :  name(std::move(name)) {
+        addComponent<RenderComponent>(transform, sprite);
     }
 
     Object(Object&& other) noexcept : name(std::move(other.name)), components(std::move(other.components)) {}
@@ -80,7 +84,7 @@ public:
      */
     template<typename T, typename... Args>
     void addComponent(Args &&... args) {
-        components[typeid(T)] = std::make_unique<T>(std::forward<Args>(args)...); // do not use CreateScope std::forward 2 times
+        components[typeid(T)] = CreateScope<T>(std::forward<Args>(args)...);
     }
 
     template<typename T>

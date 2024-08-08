@@ -2,7 +2,9 @@
 
 #include "Core.hpp"
 #include "Window.hpp"
+
 #include "avalon/logic/Scene.hpp"
+#include "avalon/utils/Time.hpp"
 
 class Application {
 private:

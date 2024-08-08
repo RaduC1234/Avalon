@@ -1,9 +1,12 @@
 #pragma once
 
-#include "avalon/core/Core.hpp"
 #include "Shader.hpp"
 #include "Camera.hpp"
+#include "Transform.hpp"
+#include "Color.hpp"
+
 #include "avalon/logic/Object.hpp"
+#include "avalon/utils/Time.hpp"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -95,16 +98,17 @@ public:
         glBindVertexArray(0); // Unbind the VAO
     }
 
-    void addSprite(const RenderComponent &sprite) {
+    void addSprite(const RenderComponent &renderComponent) {
 
         int texId = 0;
+        Ref<Texture> texture = renderComponent.spriteRef->texture;
 
-        if (sprite.textureRef != nullptr) {
-            if (std::find(textures.begin(), textures.end(), sprite.textureRef) == textures.end())
-                textures.push_back(sprite.textureRef);
+        if (texture != nullptr) {
+            if (std::find(textures.begin(), textures.end(), texture) == textures.end())
+                textures.push_back(texture);
 
             for (int i = 0; i < textures.size(); i++) {
-                if (textures[i] == sprite.textureRef) {
+                if (textures[i] == texture) {
                     texId = i + 1;
                     break;
                 }
@@ -133,19 +137,19 @@ public:
             }
 
             // Load position
-            vertexArray[offset + 0] = sprite.transform.position.x + (xAdd * sprite.transform.scale.x);
-            vertexArray[offset + 1] = sprite.transform.position.y + (yAdd * sprite.transform.scale.y);
+            vertexArray[offset + 0] = renderComponent.transform.position.x + (xAdd * renderComponent.transform.scale.x);
+            vertexArray[offset + 1] = renderComponent.transform.position.y + (yAdd * renderComponent.transform.scale.y);
             vertexArray[offset + 2] = 0; // z
 
             // Load Color
-            vertexArray[offset + 3] = sprite.color.r;
-            vertexArray[offset + 4] = sprite.color.g;
-            vertexArray[offset + 5] = sprite.color.b;
-            vertexArray[offset + 6] = sprite.color.a;
+            vertexArray[offset + 3] = renderComponent.color.r;
+            vertexArray[offset + 4] = renderComponent.color.g;
+            vertexArray[offset + 5] = renderComponent.color.b;
+            vertexArray[offset + 6] = renderComponent.color.a;
 
             // Load texture coordinates
-            vertexArray[offset + 7] = sprite.texCoords[i].x;
-            vertexArray[offset + 8] = sprite.texCoords[i].y;
+            vertexArray[offset + 7] = renderComponent.spriteRef->texCoords[i].x;
+            vertexArray[offset + 8] = renderComponent.spriteRef->texCoords[i].y;
 
             // Load text id
             vertexArray[offset + 9] = texId;
@@ -229,12 +233,16 @@ public:
 
     Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {}
 
-    void add(RenderComponent &sprite) {
+    void add(const RenderComponent &renderComponent) {
+
+        if(!renderComponent.isVisible)
+            return;
+
         if (quadBatches.empty() || quadBatches.back().isFull()) {
             quadBatches.emplace_back(maxBatchSize, camera);
             quadBatches.back().start();
         }
-        quadBatches.back().addSprite(sprite);
+        quadBatches.back().addSprite(renderComponent);
     }
 
     void render() {

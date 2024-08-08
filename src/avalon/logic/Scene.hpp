@@ -1,10 +1,6 @@
 #ifndef AVALON_SCENE_HPP
 #define AVALON_SCENE_HPP
 
-#include "../renderer/Camera.hpp"
-#include "../renderer/Texture.hpp"
-#include "../renderer/Shader.hpp"
-
 #include "Object.hpp"
 #include "avalon/renderer/Renderer.hpp"
 
@@ -49,7 +45,7 @@ public:
     void init() override {
 
         Object obj1("Obj1", Transform(150, 0, 100, 100), Color(0.0f, 1.0f, 1.0f, 1.0f));
-        Object obj2("Obj1", Transform(0, 150, 100, 100), AssetPool::DEFAULT_TEXTURE());
+        Object obj2("Obj1", Transform(0, 150, 100, 100), CreateRef<Sprite>(AssetPool::DEFAULT_TEXTURE()));
 
         addObject(obj1);
         addObject(obj2);

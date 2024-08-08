@@ -4,6 +4,7 @@ Application::Application() {
 
     Log::init();
     Time::init();
+    AssetPool::init();
 
     AV_CORE_INFO("Starting application!");
 
