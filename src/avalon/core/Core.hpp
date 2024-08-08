@@ -7,11 +7,9 @@
 #include <vector>
 #include <unordered_set>
 #include <queue>
-//#include <iostream>
 #include <fstream>
 #include <functional>
 #include <chrono>
-//#include <cstdint>
 #include <utility>
 #include <typeindex>
 
@@ -20,7 +18,6 @@
 #include "avalon/event/InputListeners.hpp"
 
 #define BIT(x) (1 << x)
-
 
 template<typename T>
 using Scope = std::unique_ptr<T>;

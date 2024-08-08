@@ -44,11 +44,21 @@ public:
 
     void init() override {
 
+        AssetPool::loadIndexedResources();
+
         Object obj1("Obj1", Transform(150, 0, 100, 100), Color(0.0f, 1.0f, 1.0f, 1.0f));
-        Object obj2("Obj1", Transform(0, 150, 100, 100), CreateRef<Sprite>(AssetPool::DEFAULT_TEXTURE()));
+        Object obj2("Obj1", Transform(0, 150, 100, 100),Sprite(AssetPool::getTexture("debug.png")));
 
         addObject(obj1);
         addObject(obj2);
+
+        int i = 0;
+        for(SpriteSheet x : AssetPool::spriteSheets) {
+            for(Sprite y : x.sprites) {
+                Object obj("onj", Transform(i++ * 70, 0, 64, 64), y);
+                addObject(obj);
+            }
+        }
     }
 
     void update(float deltaTime) override {
@@ -65,7 +75,6 @@ public:
             camera->position.y -= deltaTime * 200.0f;
 
         renderer.addAll(objects);
-        renderer.render();
         renderer.flush();
 
         for (auto &x: objects) {

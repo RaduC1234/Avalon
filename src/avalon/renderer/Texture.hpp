@@ -18,7 +18,10 @@ public:
     }
 
 private:
+
+
     void generateAndLoad(const char *filePath) {
+
         glGenTextures(1, &textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
@@ -64,6 +67,14 @@ public:
 
     const std::string &getFilePath() const {
         return filePath;
+    }
+
+    int getWidth() const {
+        return width;
+    }
+
+    int getHeight() const {
+        return height;
     }
 };
 

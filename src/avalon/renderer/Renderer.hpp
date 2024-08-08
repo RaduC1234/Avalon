@@ -101,7 +101,7 @@ public:
     void addSprite(const RenderComponent &renderComponent) {
 
         int texId = 0;
-        Ref<Texture> texture = renderComponent.spriteRef->texture;
+        Ref<Texture> texture = renderComponent.sprite.texture;
 
         if (texture != nullptr) {
             if (std::find(textures.begin(), textures.end(), texture) == textures.end())
@@ -148,8 +148,8 @@ public:
             vertexArray[offset + 6] = renderComponent.color.a;
 
             // Load texture coordinates
-            vertexArray[offset + 7] = renderComponent.spriteRef->texCoords[i].x;
-            vertexArray[offset + 8] = renderComponent.spriteRef->texCoords[i].y;
+            vertexArray[offset + 7] = renderComponent.sprite.texCoords[i].x;
+            vertexArray[offset + 8] = renderComponent.sprite.texCoords[i].y;
 
             // Load text id
             vertexArray[offset + 9] = texId;
@@ -175,7 +175,7 @@ public:
             textures[i]->bind();
         }
 
-        shader->uploadIntArray("uTextures", texSlots);
+        shader->uploadIntArray("uTextures", texSlots, 8);
 
         glBindVertexArray(VAO); // Bind the VAO
 
@@ -245,13 +245,10 @@ public:
         quadBatches.back().addSprite(renderComponent);
     }
 
-    void render() {
+    void flush() {
         for (auto &batch: quadBatches) {
             batch.render();
         }
-    }
-
-    void flush() {
         quadBatches.clear();
     }
 

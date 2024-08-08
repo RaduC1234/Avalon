@@ -9,58 +9,7 @@
 
 #include "avalon/components/RenderComponent.hpp"
 
-/**
- * Usage with components:
- *
- *
- * @code
-//Example components
-class PositionComponent : public Component {
-public:
-    float x, y;
 
-    PositionComponent(float x = 0, float y = 0) : x(x), y(y) {}
-};
-
-class VelocityComponent : public Component {
-public:
-    float vx, vy;
-
-    VelocityComponent(float vx = 0, float vy = 0) : vx(vx), vy(vy) {}
-};
-
-int main() {
-    Object obj;
-
-    // Adding components
-    obj.addComponent<PositionComponent>(10.0f, 20.0f);
-    obj.addComponent<VelocityComponent>(1.0f, 1.5f);
-
-    // Retrieving and using components
-    PositionComponent* pos = obj.getComponent<PositionComponent>();
-    VelocityComponent* vel = obj.getComponent<VelocityComponent>();
-
-    if (pos) {
-        std::cout << "Position: (" << pos->x << ", " << pos->y << ")\n";
-    }
-
-    if (vel) {
-        std::cout << "Velocity: (" << vel->vx << ", " << vel->vy << ")\n";
-    }
-
-    // Removing a component
-    obj.removeComponent<VelocityComponent>();
-
-    // Check if the component was removed
-    vel = obj.getComponent<VelocityComponent>();
-    if (!vel) {
-        std::cout << "Velocity component removed.\n";
-    }
-
-    return 0;
- *}
- *
- */
 class Object {
     std::string name = "Object";
     std::unordered_map<std::type_index, Scope<Component>> components;
@@ -73,7 +22,7 @@ public:
         addComponent<RenderComponent>(transform, color);
     }
 
-    Object(std::string name, const Transform& transform, const Ref<Sprite>& sprite) :  name(std::move(name)) {
+    Object(std::string name, const Transform& transform, const Sprite& sprite) :  name(std::move(name)) {
         addComponent<RenderComponent>(transform, sprite);
     }
 
@@ -84,7 +33,10 @@ public:
      */
     template<typename T, typename... Args>
     void addComponent(Args &&... args) {
-        components[typeid(T)] = CreateScope<T>(std::forward<Args>(args)...);
+
+        auto component = CreateScope<T>(std::forward<Args>(args)...);
+        component->attachToObject(this);
+        components[typeid(T)] = std::move(component);
     }
 
     template<typename T>

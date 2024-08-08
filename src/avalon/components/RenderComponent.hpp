@@ -1,12 +1,10 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <utility>
-
 #include "avalon/logic/Component.hpp"
 #include "avalon/logic/Object.hpp"
 #include "avalon/utils/AssetPool.hpp"
 
+#include <glm/glm.hpp>
 
 class RenderComponent : public Component {
 public:
@@ -20,20 +18,20 @@ public:
     Color color;
     bool isVisible;
 
-    Ref<Sprite> spriteRef;
+    Sprite sprite;
 
 
     RenderComponent(const Transform &transform, const Color color, Shape shape = Shape::QUAD,
                     bool isVisible = true) : transform(transform),
                                              color(color),
-                                             spriteRef(CreateRef<Sprite>()),
+                                             sprite(Sprite()),
                                              shape(shape),
                                              isVisible(isVisible) {}
 
-    RenderComponent(const Transform &transform, const Ref<Sprite>& sprite, Shape shape = Shape::QUAD,
+    RenderComponent(const Transform &transform, Sprite sprite, Shape shape = Shape::QUAD,
                     bool isVisible = true) : transform(transform),
                                              color(Color(1.0f, 1.0f, 1.0f, 1.0f)),
-                                             spriteRef(sprite),
+                                             sprite(std::move(sprite)),
                                              shape(shape),
                                              isVisible(isVisible) {}
 

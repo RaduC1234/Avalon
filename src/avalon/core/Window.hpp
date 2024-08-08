@@ -158,7 +158,7 @@ public:
 
 private:
 
-    void setWindowIcon(GLFWwindow* window, const char* iconPath) {
+    static void setWindowIcon(GLFWwindow* window, const char* iconPath) {
         GLFWimage images[1];
         images[0].pixels = stbi_load(iconPath, &images[0].width, &images[0].height, 0, 4); //rgba channels
         if (images[0].pixels) {
