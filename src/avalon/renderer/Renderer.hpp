@@ -191,7 +191,15 @@ public:
         glBindVertexArray(0); // Unbind the VAO
     }
 
-    bool isFull() {
+    bool hasTextureRoom() {
+        return textures.size() < 8;
+    }
+
+    bool hasTexture(const Ref<Texture>& texture) {
+        return std::find(textures.begin(), textures.end(), texture) != textures.end();
+    }
+
+    bool isFull() const {
         return full;
     }
 
