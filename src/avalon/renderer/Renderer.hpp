@@ -36,6 +36,7 @@ class QuadRenderBatch {
     std::vector<Ref<Texture>> textures;
     int texSlots[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 
+    int zIndex;
     bool full = false;
 
     GLuint VAO{}, VBO{}, EBO{};
@@ -46,15 +47,16 @@ public:
     QuadRenderBatch() = default;
 
 
-    QuadRenderBatch(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {
+    QuadRenderBatch(int32_t maxBatchSize, const Ref<Camera> &camera, int zIndex) : maxBatchSize(maxBatchSize),
+                                                                                   camera(camera), zIndex(zIndex) {
         vertexArray.resize(maxBatchSize * vertexSize * 4); // 4 vertices per quad
         elementArray.resize(maxBatchSize * 6); // 6 indices per quad
     }
 
     ~QuadRenderBatch() {
-        if(VAO) glDeleteVertexArrays(1, &VAO);
-        if(VBO) glDeleteBuffers(1, &VBO);
-        if(EBO) glDeleteBuffers(1, &EBO);
+        if (VAO) glDeleteVertexArrays(1, &VAO);
+        if (VBO) glDeleteBuffers(1, &VBO);
+        if (EBO) glDeleteBuffers(1, &EBO);
 
     }
 
@@ -139,7 +141,7 @@ public:
             // Load position
             vertexArray[offset + 0] = renderComponent.transform.position.x + (xAdd * renderComponent.transform.scale.x);
             vertexArray[offset + 1] = renderComponent.transform.position.y + (yAdd * renderComponent.transform.scale.y);
-            vertexArray[offset + 2] = 0; // z
+            vertexArray[offset + 2] = renderComponent.zIndex; // z
 
             // Load Color
             vertexArray[offset + 3] = renderComponent.color.r;
@@ -184,7 +186,7 @@ public:
 
         glDrawElements(GL_TRIANGLES, index * 6, GL_UNSIGNED_INT, 0); // Draw the triangles for both quads
 
-        for(int i = 0; i < textures.size(); i++) {
+        for (int i = 0; i < textures.size(); i++) {
             textures[i]->unbind();
         }
 
@@ -195,12 +197,16 @@ public:
         return textures.size() < 8;
     }
 
-    bool hasTexture(const Ref<Texture>& texture) {
+    bool hasTexture(const Ref<Texture> &texture) {
         return std::find(textures.begin(), textures.end(), texture) != textures.end();
     }
 
     bool isFull() const {
         return full;
+    }
+
+    int getZIndex() const {
+        return zIndex;
     }
 
 private:
@@ -239,22 +245,45 @@ class Renderer {
 public:
     Renderer() = default;
 
-    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {}
+    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {
+        // configure global opengl state
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
 
     void add(const RenderComponent &renderComponent) {
 
-        if(!renderComponent.isVisible)
+        if (!renderComponent.isVisible)
             return;
 
-        if (quadBatches.empty() || quadBatches.back().isFull()) {
-            quadBatches.emplace_back(maxBatchSize, camera);
-            quadBatches.back().start();
+        bool added = false;
+        for (auto &x: quadBatches) {
+            if (!x.isFull() && x.getZIndex() == renderComponent.zIndex) {
+                auto &texture = renderComponent.sprite.texture;
+                if (texture == nullptr || (x.hasTexture(texture) || x.hasTextureRoom())) {
+                    x.addSprite(renderComponent);
+                    added = true;
+                    break;
+                }
+            }
         }
-        quadBatches.back().addSprite(renderComponent);
+
+        if (!added) {
+            quadBatches.emplace_back(maxBatchSize, camera, renderComponent.zIndex);
+            quadBatches.back().addSprite(renderComponent);
+        }
+
     }
 
     void flush() {
+
+        std::sort(quadBatches.begin(), quadBatches.end(),
+                  [](const QuadRenderBatch &a, const QuadRenderBatch &b) {
+                          return a.getZIndex() > b.getZIndex();
+                  });
+
         for (auto &batch: quadBatches) {
+            batch.start();
             batch.render();
         }
         quadBatches.clear();

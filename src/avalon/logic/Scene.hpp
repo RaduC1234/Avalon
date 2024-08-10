@@ -15,7 +15,7 @@ protected:
 public:
     Scene() {
         camera = CreateRef<Camera>(-200, -300);
-        renderer = Renderer(1000, camera);
+        renderer = Renderer(2, camera);
     }
 
     virtual ~Scene() = default;
@@ -46,19 +46,21 @@ public:
 
         AssetPool::loadIndexedResources();
 
-        Object obj1("Obj1", Transform(150, 0, 100, 100), Color(0.0f, 1.0f, 1.0f, 1.0f));
-        Object obj2("Obj1", Transform(0, 150, 100, 100),Sprite(AssetPool::getTexture("debug.png")));
+        Object obj1("Obj1", Transform(150, 0, 100, 100), Color(210, 109, 101, 150), 2); // red
+        Object obj2("Obj1", Transform(225, 0, 100, 100),  Color(136, 193, 99, 50), 1); // green
+        Object obj3("Obj2", Transform(175, 50, 100, 100), Color(17, 33, 94, 100), 3); // blue
 
         addObject(obj1);
         addObject(obj2);
+        addObject(obj3);
 
-        int i = 0;
+/*        int i = 0;
         for(SpriteSheet x : AssetPool::spriteSheets) {
             for(Sprite y : x.sprites) {
                 Object obj("onj", Transform(i++ * 70, 0, 64, 64), y);
                 addObject(obj);
             }
-        }
+        }*/
     }
 
     void update(float deltaTime) override {

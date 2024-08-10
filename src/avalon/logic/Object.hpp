@@ -18,15 +18,15 @@ public:
 
     Object() = default;
 
-    Object(std::string name, const Transform& transform, Color color) :  name(std::move(name)) {
-        addComponent<RenderComponent>(transform, color);
+    Object(std::string name, const Transform &transform, Color color, int zIndex = Layer::MID) : name(std::move(name)) {
+        addComponent<RenderComponent>(transform, color, zIndex);
     }
 
-    Object(std::string name, const Transform& transform, const Sprite& sprite) :  name(std::move(name)) {
-        addComponent<RenderComponent>(transform, sprite);
+    Object(std::string name, const Transform &transform, const Sprite &sprite, int zIndex = Layer::MID) : name(std::move(name)) {
+        addComponent<RenderComponent>(transform, sprite, zIndex);
     }
 
-    Object(Object&& other) noexcept : name(std::move(other.name)), components(std::move(other.components)) {}
+    Object(Object &&other) noexcept: name(std::move(other.name)), components(std::move(other.components)) {}
 
     /**
      * Adds an component to the object. Note that the duplicates are not allowed.

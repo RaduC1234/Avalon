@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <filesystem>
+#include <set>
 #include <sstream>
 #include <vector>
 #include <unordered_set>

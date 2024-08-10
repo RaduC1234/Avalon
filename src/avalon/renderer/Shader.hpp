@@ -25,7 +25,7 @@ public:
 
             std::ifstream file(filepath);
             if (!file.is_open()) {
-                std::cerr << "Failed to open the file." << std::endl;
+                AV_CORE_WARN("Failed to open shader file: {0}", filepath);
                 return;
             }
 
@@ -36,7 +36,7 @@ public:
             size_t fragmentPos = content.find("#type fragment");
 
             if (vertexPos == std::string::npos || fragmentPos == std::string::npos) {
-                std::cerr << "Markers not found in the file." << std::endl;
+                AV_CORE_WARN("Markers not found in the file: {0}", filepath);
                 return;
             }
 
@@ -49,7 +49,7 @@ public:
             loadAndCompile(vertexSource.c_str(), fragmentSource.c_str());
 
         } catch (const std::exception &e) {
-            std::cerr << e.what() << std::endl;
+            AV_CORE_ERROR(e.what());
             throw;
         }
     }

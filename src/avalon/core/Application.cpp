@@ -15,7 +15,6 @@ Application::Application() {
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
     AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
 
-
     isRunning = true;
 }
 
@@ -25,13 +24,10 @@ void Application::run() {
     float endTime;
     float dt = -1.0f;
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
     while (isRunning) {
         glClearColor(0.0863f, 0.0863f, 0.0863f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (dt >= 0 && currentScene != nullptr)
             this->currentScene->update(dt);
