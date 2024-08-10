@@ -16,20 +16,20 @@ static int glfw_windowCount = 0;
 
 class Window {
 
-
     std::string title = "Avalon C++";
     int width;
     int height;
     bool vSync;
 
     GLFWwindow *glfwWindow = nullptr;
-    InputListeners& listener = InputListeners::getInstance();
+    InputListeners &listener = InputListeners::getInstance();
 
     Scope<Scene> currentScene;
 
 public:
 
-    Window(std::string  title = "Avalon Window", int width = 1920, int height = 1080, bool vSync = GLFW_TRUE) : title(std::move(title)), width(width), height(height), vSync(vSync) {
+    Window(std::string title = "Avalon Window", int width = 1920, int height = 1080, bool vSync = GLFW_TRUE) : title(
+            std::move(title)), width(width), height(height), vSync(vSync) {
 
         Time::init();
 
@@ -55,14 +55,14 @@ public:
 
         //https://www.glfw.org/docs/3.3/input_guide.html#input_key
 
-/*            // Window Callbacks
-            glfwSetWindowSizeCallback(glfw_window, [](GLFWwindow *window, int width, int height) {
-                Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
+        // Window Callbacks
+        glfwSetWindowSizeCallback(glfwWindow, [](GLFWwindow *window, int width, int height) {
+            Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
 
-                //WindowResizeEvent event(width, height);
-                //data.getEventManager().publish(event);
-            });
-*/
+            data.width = width;
+            data.height = height;
+        });
+
         glfwSetWindowCloseCallback(glfwWindow, [](GLFWwindow *window) {
             //Window &data = *static_cast<Window *>(glfwGetWindowUserPointer(window));
 
@@ -131,10 +131,7 @@ public:
             glViewport(0, 0, l_width, l_height);
         });
 
-        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
-            std::cout << "Failed to initialize GLAD" << std::endl;
-            exit(1);
-        }
+
 
         // enable v-sync
         glfwSwapInterval(1);
@@ -154,20 +151,26 @@ public:
         glfwSwapBuffers(glfwWindow);
     }
 
+    int getWidth() const {
+        return width;
+    }
+
+    int getHeight() const {
+        return height;
+    }
+
     friend class Application;
 
 private:
 
-    static void setWindowIcon(GLFWwindow* window, const char* iconPath) {
+    static void setWindowIcon(GLFWwindow *window, const char *iconPath) {
         GLFWimage images[1];
         images[0].pixels = stbi_load(iconPath, &images[0].width, &images[0].height, 0, 4); //rgba channels
         if (images[0].pixels) {
             glfwSetWindowIcon(window, 1, images);
             stbi_image_free(images[0].pixels);
         } else {
-            std::stringstream ss;
-            ss << "Error loading icon" << iconPath;
-            AV_CORE_ERROR(ss.str());
+            AV_CORE_ERROR("Error loading icon {0}", iconPath);
         }
     }
 

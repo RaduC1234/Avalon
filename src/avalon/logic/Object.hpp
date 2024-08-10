@@ -53,16 +53,4 @@ public:
     void removeComponent() {
         components.erase(typeid(T));
     }
-
-    void start() {
-        for (auto &x: components) {
-            x.second->start();
-        }
-    }
-
-    void update(float dt) {
-        for (auto &x: components) {
-            x.second->update(dt);
-        }
-    }
 };

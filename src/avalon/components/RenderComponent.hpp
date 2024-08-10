@@ -42,14 +42,6 @@ public:
     ~RenderComponent() override = default;
 
 
-    void start() override {
-
-    }
-
-    void update(float dt) override {
-
-    }
-
     // for multiset in renderer
     bool operator<(const RenderComponent& other) const {
         return this->zIndex > other.zIndex;

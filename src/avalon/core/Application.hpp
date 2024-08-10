@@ -29,3 +29,4 @@ public:
     // Change the current scene
     void changeScene(Scope<Scene> scene);
 };
+

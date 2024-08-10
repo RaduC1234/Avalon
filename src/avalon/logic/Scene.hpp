@@ -1,7 +1,7 @@
-#ifndef AVALON_SCENE_HPP
-#define AVALON_SCENE_HPP
+#pragma once
 
 #include "Object.hpp"
+
 #include "avalon/renderer/Renderer.hpp"
 
 class Scene {
@@ -14,6 +14,8 @@ protected:
 
 public:
     Scene() {
+
+        Renderer::init();
         camera = CreateRef<Camera>(-200, -300);
         renderer = Renderer(2, camera);
     }
@@ -23,18 +25,15 @@ public:
     virtual void init() {}
 
     void start() {
-        for (auto &x: objects) {
-            x.start();
-        }
     }
 
-    virtual void update(float deltaTime) = 0;
+    virtual void update(float deltaTime, float windowWidth, float windowHeight) = 0;
 
     void addObject(Object &obj) {
         objects.push_back(std::move(obj));
     }
 
-    void removeObject(std::string name) {
+    void removeObject(const std::string& name) {
 
     }
 };
@@ -63,7 +62,7 @@ public:
         }*/
     }
 
-    void update(float deltaTime) override {
+    void update(float deltaTime, float windowWidth, float windowHeight) override {
         if (KEY_PRESSED(GLFW_KEY_D))
             camera->position.x += deltaTime * 200.0f;
 
@@ -79,23 +78,5 @@ public:
         renderer.addAll(objects);
         renderer.flush();
 
-        for (auto &x: objects) {
-            x.update(deltaTime);
-        }
     }
 };
-
-
-class LevelScene : public Scene {
-public:
-
-    void init() override {
-
-    }
-
-    void update(float deltaTime) override {
-
-    }
-};
-
-#endif //AVALON_SCENE_HPP

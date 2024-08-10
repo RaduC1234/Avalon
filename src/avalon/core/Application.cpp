@@ -11,10 +11,6 @@ Application::Application() {
 
     changeScene(CreateScope<LevelEditorScene>());
 
-    int textureUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
-    AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
-
     isRunning = true;
 }
 
@@ -26,18 +22,11 @@ void Application::run() {
 
 
     while (isRunning) {
-        glClearColor(0.0863f, 0.0863f, 0.0863f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         if (dt >= 0 && currentScene != nullptr)
-            this->currentScene->update(dt);
+            this->currentScene->update(dt, window->getWidth(), window->getHeight());
 
         this->window->onUpdate();
-
-        GLenum err;
-        if ((err = glGetError()) != GL_NO_ERROR) {
-            AV_CORE_ERROR("OpenGL error: {0}", err);
-        }
 
         endTime = Time::getTime();
         dt = endTime - beginTime;

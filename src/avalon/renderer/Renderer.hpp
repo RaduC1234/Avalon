@@ -2,14 +2,17 @@
 
 #include "Shader.hpp"
 #include "Camera.hpp"
-#include "Transform.hpp"
 #include "Color.hpp"
 
-#include "avalon/logic/Object.hpp"
+#include "avalon/components/RenderComponent.hpp"
 #include "avalon/utils/Time.hpp"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+
+class TextRenderBatch {
+
+};
 
 class QuadRenderBatch {
 
@@ -241,14 +244,15 @@ class Renderer {
     int32_t maxBatchSize = 0;
     Ref<Camera> camera;
     std::vector<QuadRenderBatch> quadBatches;
+    glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
 
 public:
     Renderer() = default;
 
-    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera) : maxBatchSize(maxBatchSize), camera(camera) {
-        // configure global opengl state
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera,
+             const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(maxBatchSize),
+                                                                               camera(camera), clearColor(clearColor) {
+
     }
 
     void add(const RenderComponent &renderComponent) {
@@ -279,14 +283,22 @@ public:
 
         std::sort(quadBatches.begin(), quadBatches.end(),
                   [](const QuadRenderBatch &a, const QuadRenderBatch &b) {
-                          return a.getZIndex() > b.getZIndex();
+                      return a.getZIndex() > b.getZIndex();
                   });
+
+        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         for (auto &batch: quadBatches) {
             batch.start();
             batch.render();
         }
         quadBatches.clear();
+
+        GLenum err;
+        if ((err = glGetError()) != GL_NO_ERROR) {
+            AV_CORE_ERROR("OpenGL error: {0}", err);
+        }
     }
 
     // helper functions
@@ -298,6 +310,22 @@ public:
     void addAll(std::vector<Object> &objects) {
         for (auto &x: objects)
             add(x);
+    }
+
+    void static init() {
+
+        if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+            std::cout << "Failed to initialize GLAD" << std::endl;
+            exit(1);
+        }
+
+        int textureUnits;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
+        AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
+
+        // configure global opengl state
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 };
 
