@@ -18,12 +18,10 @@ public:
 
     Object() = default;
 
-    Object(std::string name, const Transform &transform, Color color, int zIndex = Layer::MID) : name(std::move(name)) {
-        addComponent<RenderComponent>(transform, color, zIndex);
+    Object(std::string name, const Transform &transform, Color color, int zIndex) : name(std::move(name)) {
     }
 
-    Object(std::string name, const Transform &transform, const Sprite &sprite, int zIndex = Layer::MID) : name(std::move(name)) {
-        addComponent<RenderComponent>(transform, sprite, zIndex);
+    Object(std::string name, const Transform &transform, /*const Sprite &sprite,*/ int zIndex) : name(std::move(name)) {
     }
 
     Object(Object &&other) noexcept: name(std::move(other.name)), components(std::move(other.components)) {}

@@ -9,43 +9,22 @@
 
 class RenderComponent : public Component {
 public:
-
     enum class Shape {
         QUAD
     };
 
+    glm::vec2 position;
+    glm::vec2 scale;
+    glm::vec4 color;
     Shape shape;
-    Transform transform;
-    Color color;
+    Sprite sprite;
     bool isVisible;
     int zIndex = Layer::MID;
 
-    Sprite sprite;
-
-
-    RenderComponent(const Transform &transform, const Color color, int zIndex = Layer::MID, Shape shape = Shape::QUAD,
-                    bool isVisible = true) : transform(transform),
-                                             color(color),
-                                             sprite(Sprite()),
-                                             shape(shape),
-                                             zIndex(zIndex),
-                                             isVisible(isVisible) {}
-
-    RenderComponent(const Transform &transform, Sprite sprite, int zIndex = Layer::MID, Shape shape = Shape::QUAD,
-                    bool isVisible = true) : transform(transform),
-                                             color(Color(1.0f, 1.0f, 1.0f, 1.0f)),
-                                             sprite(std::move(sprite)),
-                                             shape(shape),
-                                             zIndex(zIndex),
-                                             isVisible(isVisible) {}
-
-    ~RenderComponent() override = default;
-
-
-    // for multiset in renderer
-    bool operator<(const RenderComponent& other) const {
-        return this->zIndex > other.zIndex;
-    }
+    RenderComponent(const glm::vec2 &position, const glm::vec2 &scale, const glm::vec4 &color, const Sprite &sprite,
+                    int zIndex, Shape shape, bool isVisible = true) : position(position), scale(scale), color(color),
+                                                               sprite(sprite), zIndex(zIndex), shape(shape),
+                                                               isVisible(isVisible) {}
 };
 
 

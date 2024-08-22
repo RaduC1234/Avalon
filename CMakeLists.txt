@@ -22,6 +22,7 @@ add_subdirectory(dependencies/glfw) # For OpenGL
 add_subdirectory(dependencies/glad) # OpenGL loader
 add_subdirectory(dependencies/glm)  # For OpenGL Math
 add_subdirectory(dependencies/json) # For JSON
+add_subdirectory(dependencies/freetype) # For Text Rendering
 
 # Add an interface library for stb_image - does not have CMakeLists.txt
 add_library(stb_image INTERFACE)
@@ -31,7 +32,7 @@ target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/depen
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog glm glfw glad stb_image nlohmann_json::nlohmann_json) # Nu merge decat public
+target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog glm glfw glad stb_image nlohmann_json::nlohmann_json freetype) # Nu merge decat public
 
 # Set compile options for different build configurations
 target_compile_options(${PROJECT_NAME} PRIVATE

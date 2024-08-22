@@ -1,5 +1,4 @@
-#ifndef AVALON_WINDOW_HPP
-#define AVALON_WINDOW_HPP
+#pragma once
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -10,7 +9,7 @@
 
 #include "Core.hpp"
 
-#include "../logic/Scene.hpp"
+#include "avalon/logic/Scene.hpp"
 
 static int glfw_windowCount = 0;
 
@@ -38,6 +37,7 @@ public:
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
         glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE); // make window maximized
+        glfwWindowHint(GLFW_SAMPLES, 4);  // Request 4x MSAA for Anti-Aliasing
 
         this->glfwWindow = glfwCreateWindow(this->width, this->height, this->title.c_str(), NULL, NULL);
 
@@ -175,5 +175,3 @@ private:
     }
 
 };
-
-#endif //AVALON_WINDOW_HPP

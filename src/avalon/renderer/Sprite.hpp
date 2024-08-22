@@ -37,17 +37,6 @@ public:
 
 };
 
-namespace std {
-    template <>
-    struct hash<Sprite> {
-        std::size_t operator()(const Sprite& sprite) const {
-            return
-            std::hash<int>()(sprite.index) ^
-            (std::hash<Ref<Texture>>()(sprite.texture) << 1);
-        }
-    };
-}
-
 struct SpriteSheet {
     Ref<Texture> texture;
     std::vector<Sprite> sprites;

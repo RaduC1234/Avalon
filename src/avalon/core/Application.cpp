@@ -23,8 +23,10 @@ void Application::run() {
 
     while (isRunning) {
 
-        if (dt >= 0 && currentScene != nullptr)
-            this->currentScene->update(dt, window->getWidth(), window->getHeight());
+        if (dt >= 0 && currentScene != nullptr) {
+            this->currentScene->onUpdate(dt);
+            this->currentScene->onRender(window->getWidth(), window->getHeight());
+        }
 
         this->window->onUpdate();
 
@@ -35,7 +37,11 @@ void Application::run() {
 }
 
 void Application::changeScene(Scope<Scene> scene) {
+
+    if (currentScene != nullptr)
+        this->currentScene->onDestroy();
+
     this->currentScene = std::move(scene);
-    currentScene->init();
-    currentScene->start();
+    currentScene->onCreate();
+    currentScene->onStart();
 }
