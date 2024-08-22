@@ -17,21 +17,37 @@ file(GLOB_RECURSE SOURCES "src/*.cpp" "src/*.hpp")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)  # Include Avalon/src
 
 # Add dependencies
-add_subdirectory(dependencies/spdlog) # For Logging
-add_subdirectory(dependencies/glfw) # For OpenGL
-add_subdirectory(dependencies/glad) # OpenGL loader
-add_subdirectory(dependencies/glm)  # For OpenGL Math
-add_subdirectory(dependencies/json) # For JSON
+add_subdirectory(dependencies/spdlog)   # Logging
+add_subdirectory(dependencies/glfw)     # OpenGL window and context
+add_subdirectory(dependencies/glad)     # OpenGL loader
+add_subdirectory(dependencies/glm)      # OpenGL Math
+add_subdirectory(dependencies/json)     # JSON handling
+add_subdirectory(dependencies/freetype) # Text rendering
 
-# Add an interface library for stb_image - does not have CMakeLists.txt
+# Add an interface library for stb_image - it doesn't have its own CMakeLists.txt
 add_library(stb_image INTERFACE)
 target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/stb)
 
+# Add an interface library for stb_image - it doesn't have its own CMakeLists.txt
+add_library(imgui INTERFACE)
+target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui)
+target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/backends)
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-target_link_libraries(${PROJECT_NAME} PUBLIC spdlog::spdlog glm glfw glad stb_image nlohmann_json::nlohmann_json) # Nu merge decat public
+# Link the libraries to the executable
+target_link_libraries(${PROJECT_NAME}
+        PUBLIC
+        spdlog::spdlog          # Logging
+        glfw                    # OpenGL window and context
+        glad                    # OpenGL loader
+        glm                     # OpenGL Math
+        stb_image               # Image loading
+        nlohmann_json::nlohmann_json  # JSON handling
+        freetype                # Text rendering
+        imgui
+)
 
 # Set compile options for different build configurations
 target_compile_options(${PROJECT_NAME} PRIVATE

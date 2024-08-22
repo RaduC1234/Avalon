@@ -10,9 +10,6 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-class TextRenderBatch {
-
-};
 
 class QuadRenderBatch {
 
@@ -33,7 +30,7 @@ class QuadRenderBatch {
     Ref<Camera> camera;
 
     std::vector<float> vertexArray;
-    uint32_t index = 0;
+    uint32_t index = 0; // holds the drawing index in the element array
     std::vector<uint32_t> elementArray;
 
     std::vector<Ref<Texture>> textures;
@@ -103,10 +100,13 @@ public:
         glBindVertexArray(0); // Unbind the VAO
     }
 
-    void addSprite(const RenderComponent &renderComponent) {
+    /**
+     * Adds a quad to draw call. Specify null for non texture quad.
+     */
+    void addQuad(const glm::vec2 &position, const glm::vec2 scale, const glm::vec4 color, const Ref<Texture> &texture,
+                 std::array<glm::vec2, 4> texCoords) {
 
         int texId = 0;
-        Ref<Texture> texture = renderComponent.sprite.texture;
 
         if (texture != nullptr) {
             if (std::find(textures.begin(), textures.end(), texture) == textures.end())
@@ -142,19 +142,19 @@ public:
             }
 
             // Load position
-            vertexArray[offset + 0] = renderComponent.transform.position.x + (xAdd * renderComponent.transform.scale.x);
-            vertexArray[offset + 1] = renderComponent.transform.position.y + (yAdd * renderComponent.transform.scale.y);
-            vertexArray[offset + 2] = renderComponent.zIndex; // z
+            vertexArray[offset + 0] = position.x + (xAdd * scale.x);
+            vertexArray[offset + 1] = position.y + (yAdd * scale.y);
+            vertexArray[offset + 2] = zIndex; // z
 
             // Load Color
-            vertexArray[offset + 3] = renderComponent.color.r;
-            vertexArray[offset + 4] = renderComponent.color.g;
-            vertexArray[offset + 5] = renderComponent.color.b;
-            vertexArray[offset + 6] = renderComponent.color.a;
+            vertexArray[offset + 3] = color.r;
+            vertexArray[offset + 4] = color.g;
+            vertexArray[offset + 5] = color.b;
+            vertexArray[offset + 6] = color.a;
 
             // Load texture coordinates
-            vertexArray[offset + 7] = renderComponent.sprite.texCoords[i].x;
-            vertexArray[offset + 8] = renderComponent.sprite.texCoords[i].y;
+            vertexArray[offset + 7] = texCoords[i].x;
+            vertexArray[offset + 8] = texCoords[i].y;
 
             // Load text id
             vertexArray[offset + 9] = texId;
@@ -246,26 +246,34 @@ class Renderer {
     std::vector<QuadRenderBatch> quadBatches;
     glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
 
+    inline static bool initialized = false;
+
 public:
     Renderer() = default;
 
     Renderer(int32_t maxBatchSize, const Ref<Camera> &camera,
              const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(maxBatchSize),
                                                                                camera(camera), clearColor(clearColor) {
-
+        if(!initialized) {
+            Renderer::init();
+            initialized = true;
+        }
     }
 
-    void add(const RenderComponent &renderComponent) {
 
-        if (!renderComponent.isVisible)
-            return;
+    void drawQuad(const glm::vec3 &position, const glm::vec2 scale, const glm::vec4 color,
+                  const Sprite &sprite = Sprite(nullptr)) {
+
+        float zIndex = position.z;
 
         bool added = false;
         for (auto &x: quadBatches) {
-            if (!x.isFull() && x.getZIndex() == renderComponent.zIndex) {
-                auto &texture = renderComponent.sprite.texture;
+            if (!x.isFull() && x.getZIndex() == zIndex) {
+                auto &texture = sprite.texture;
+
+                // if quad has no texture
                 if (texture == nullptr || (x.hasTexture(texture) || x.hasTextureRoom())) {
-                    x.addSprite(renderComponent);
+                    x.addQuad(position, scale, color, sprite.texture, sprite.texCoords);
                     added = true;
                     break;
                 }
@@ -273,8 +281,8 @@ public:
         }
 
         if (!added) {
-            quadBatches.emplace_back(maxBatchSize, camera, renderComponent.zIndex);
-            quadBatches.back().addSprite(renderComponent);
+            quadBatches.emplace_back(maxBatchSize, camera, zIndex);
+            quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords);
         }
 
     }
@@ -301,17 +309,6 @@ public:
         }
     }
 
-    // helper functions
-
-    void add(Object &object) {
-        add(*object.getComponent<RenderComponent>());
-    }
-
-    void addAll(std::vector<Object> &objects) {
-        for (auto &x: objects)
-            add(x);
-    }
-
     void static init() {
 
         if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -323,9 +320,13 @@ public:
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
         AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
 
-        // configure global opengl state
+        // enable transparency
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        // Enable Anti-Aliasing - todo: implement with framebuffer - also check window class when removing this, line 40
+        glEnable(GL_MULTISAMPLE);
+
     }
 };
 

@@ -18,6 +18,10 @@
 
 #include "avalon/event/InputListeners.hpp"
 
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
+
 #define BIT(x) (1 << x)
 
 template<typename T>
