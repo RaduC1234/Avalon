@@ -28,10 +28,25 @@ add_subdirectory(dependencies/freetype) # Text rendering
 add_library(stb_image INTERFACE)
 target_include_directories(stb_image INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/stb)
 
-# Add an interface library for stb_image - it doesn't have its own CMakeLists.txt
-add_library(imgui INTERFACE)
-target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui)
-target_include_directories(imgui INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/backends)
+# Add ImGui as a STATIC library with source files
+add_library(imgui STATIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/imgui.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/imgui_draw.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/imgui_widgets.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/imgui_demo.cpp   # Optional
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/imgui_tables.cpp  # Add this line
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_glfw.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/backends/imgui_impl_opengl3.cpp
+)
+
+# Add the necessary include directories for ImGui
+target_include_directories(imgui PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui
+        ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/imgui/backends
+)
+
+# Link the necessary libraries for ImGui
+target_link_libraries(imgui PUBLIC glfw glad)
 
 # Define the executable
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -46,7 +61,7 @@ target_link_libraries(${PROJECT_NAME}
         stb_image               # Image loading
         nlohmann_json::nlohmann_json  # JSON handling
         freetype                # Text rendering
-        imgui
+        imgui                   # ImGui UI library
 )
 
 # Set compile options for different build configurations

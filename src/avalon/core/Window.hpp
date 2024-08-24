@@ -159,6 +159,10 @@ public:
         return height;
     }
 
+    GLFWwindow *getNativeWindow() const {
+        return glfwWindow;
+    }
+
     friend class Application;
 
 private:

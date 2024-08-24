@@ -1,4 +1,5 @@
 #include "Application.hpp"
+#include "avalon/editor/LevelEditorScene.hpp"
 
 Application::Application() {
 
@@ -9,7 +10,7 @@ Application::Application() {
 
     this->window = CreateScope<Window>("Avalon Window");
 
-    changeScene(CreateScope<LevelEditorScene>());
+    changeScene(CreateScope<LevelEditorScene>(this->window->getNativeWindow()));
 
     isRunning = true;
 }
