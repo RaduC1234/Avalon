@@ -1,5 +1,4 @@
-#ifndef AVALON_SHADER_H
-#define AVALON_SHADER_H
+#pragma once
 
 #include "avalon/core/Core.hpp"
 
@@ -19,7 +18,7 @@ public:
 
     Shader() = default;
 
-    explicit Shader(const std::string &filepath) : filePath(filepath){
+    explicit Shader(const std::string &filepath) : filePath(filepath) {
         try {
             std::string vertexSource, fragmentSource;
 
@@ -85,7 +84,8 @@ private:
             glGetShaderiv(vertexShaderID, GL_INFO_LOG_LENGTH, &len);
             std::string message(len, ' ');
             glGetShaderInfoLog(vertexShaderID, len, nullptr, &(message[0]));
-            std::cout << "ERROR: Vertex shader compilation failed: " << message << "\n";
+
+            AV_CORE_ERROR("ERROR: Vertex shader compilation failed: {0}", message);
         }
 
         // fragment Shader
@@ -103,7 +103,8 @@ private:
             glGetShaderiv(fragmentShaderID, GL_INFO_LOG_LENGTH, &len);
             std::string message(len, ' ');
             glGetShaderInfoLog(fragmentShaderID, len, nullptr, &(message[0]));
-            std::cout << "ERROR: Fragment shader compilation failed: " << message << "\n";
+
+            AV_CORE_ERROR("ERROR: Fragment shader compilation failed: {0}", message);
         }
 
         // attach shaders to the program
@@ -202,5 +203,3 @@ public:
         glUniform1iv(varLocation, size, array);
     }
 };
-
-#endif //AVALON_SHADER_H

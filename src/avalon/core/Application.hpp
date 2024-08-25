@@ -3,30 +3,37 @@
 #include "Core.hpp"
 #include "Window.hpp"
 
-#include "avalon/scene/Scene.hpp"
-#include "avalon/utils/Time.hpp"
+struct ApplicationSpecification {
+    std::string name = "Avalon Window";
+};
 
 class Application {
+public:
+
+    Application(const ApplicationSpecification &specification = {"Avalon Window"});
+
+    ~Application() = default;
+
+    static Application *getInstance() {
+        return instance;
+    }
+
+    Window &getWindow() { return *this->window; }
+
+    void run();
+
+    void changeScene(Scope<Scene> scene);
+
 private:
+
     Scope<Window> window;
     Scope<Scene> currentScene;
 
+    ApplicationSpecification specification;
     bool isRunning = true;
     bool isMinimized = false;
-public:
 
-    Application();
-
-    // Destructor
-    ~Application() = default;
-
-    // Accessor for window
-    Window& getWindow() { return *this->window; }
-
-    // Run the application
-    void run();
-
-    // Change the current scene
-    void changeScene(Scope<Scene> scene);
+    static Application *instance;
 };
 
+Application *createApplication();

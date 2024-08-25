@@ -19,9 +19,22 @@ public:
 
     const std::string& getLayerName() const { return layerName; }
 
-private:
-    std::vector<Entity*> entities;  // Layers reference entities but don't own them
+protected:
+    bool defaultState = false;
     std::string layerName;
+};
+
+class GameLayer : protected Layer {
+public:
+    GameLayer(int zIndex) : Layer("Game Layer " + std::to_string(zIndex)), zIndex(zIndex){}
+
+
+
+    std::vector<EntityID> entities;
+    int zIndex;
+
+    float parallaxOffsetSpeedX = 0.0f;
+    float parallaxOffsetSpeedY = 0.0;
 };
 
 /**

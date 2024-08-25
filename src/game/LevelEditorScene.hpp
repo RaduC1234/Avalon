@@ -1,12 +1,12 @@
 #pragma once
 
-#include "avalon/scene/Scene.hpp"
-#include "avalon/imgui/ImGuiLayer.hpp"
+#include "Scene.hpp"
+#include "ImGuiLayer.hpp"
 
 class LevelEditorScene : public Scene {
 public:
 
-    explicit LevelEditorScene(GLFWwindow *glfWwindow) : Scene(glfWwindow) {}
+    /*explicit LevelEditorScene(GLFWwindow *glfWwindow) : Scene(glfWwindow) {}
 
     void onCreate() override {
 
@@ -58,5 +58,10 @@ public:
     void onDestroy() override {
 
     }
+private:
+
+    Ref<Camera> camera;
+    Renderer renderer;
+    LayerStack layers;*/
 };
 

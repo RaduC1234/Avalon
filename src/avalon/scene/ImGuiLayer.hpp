@@ -7,11 +7,10 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "avalon/core/Application.hpp"
 
 class ImGuiLayer : public Layer {
 public:
-
-    explicit ImGuiLayer(GLFWwindow *window) : window(window) {}
 
     void onAttach() override {
 
@@ -21,10 +20,10 @@ public:
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-        //io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 
         // Setup Platform/Renderer backends
-        ImGui_ImplGlfw_InitForOpenGL(window, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+        ImGui_ImplGlfw_InitForOpenGL(Application::getInstance()->getWindow().getNativeWindow(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
         ImGui_ImplOpenGL3_Init();
     }
 
@@ -35,10 +34,13 @@ public:
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::ShowDemoWindow(); // Show demo window! :)
+        //ImGui::ShowDemoWindow(); // Show demo window! :)
+
+        ImGui::Begin("Debug Window");
     }
 
     void onImGuiRender() override {
+        ImGui::End();
         // Rendering
         // (Your code clears your framebuffer, renders your other stuff etc.)
         ImGui::Render();
@@ -51,7 +53,4 @@ public:
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
-
-private:
-    GLFWwindow* window;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "avalon/scene/Component.hpp"
-#include "avalon/scene/Entity.hpp"
+#include "avalon/entity/Entity.hpp"
 #include "avalon/scene/Layer.hpp"
 #include "avalon/utils/AssetPool.hpp"
 
@@ -20,10 +20,8 @@ public:
     Sprite sprite;
     bool isVisible;
 
-    RenderComponent(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 &color, const Sprite &sprite,
-                     Shape shape, bool isVisible = true) : position(position), scale(scale), color(color),
-                                                               sprite(sprite), shape(shape),
-                                                               isVisible(isVisible) {}
+    RenderComponent(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 &color, const Sprite &sprite, Shape shape, bool isVisible = true) : position(position), scale(scale), color(color),
+                                                               sprite(sprite), shape(shape), isVisible(isVisible) {}
 };
 
 

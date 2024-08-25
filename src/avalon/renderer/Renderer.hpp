@@ -5,10 +5,12 @@
 #include "Color.hpp"
 
 #include "avalon/components/RenderComponent.hpp"
-#include "avalon/utils/Time.hpp"
+#include "avalon/utils/PlatformUtils.hpp"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+
+#include <imgui.h>
 
 
 class QuadRenderBatch {
@@ -27,7 +29,7 @@ class QuadRenderBatch {
     static constexpr int vertexSizeBytes = vertexSize * sizeof(float);
 
     int32_t maxBatchSize = 0;
-    Ref<Camera> camera;
+    Camera *camera;
 
     std::vector<float> vertexArray;
     uint32_t index = 0; // holds the drawing index in the element array
@@ -40,15 +42,15 @@ class QuadRenderBatch {
     bool full = false;
 
     GLuint VAO{}, VBO{}, EBO{};
-    Ref<Shader> shader = AssetPool::getShader("quads.glsl");
+    Ref<Shader> shader;
 
 public:
 
     QuadRenderBatch() = default;
 
 
-    QuadRenderBatch(int32_t maxBatchSize, const Ref<Camera> &camera, int zIndex) : maxBatchSize(maxBatchSize),
-                                                                                   camera(camera), zIndex(zIndex) {
+    QuadRenderBatch(int32_t maxBatchSize, Camera* camera, Ref<Shader> quadShader, int zIndex) : maxBatchSize(maxBatchSize),
+                                                                                   camera(camera), shader(quadShader), zIndex(zIndex) {
         vertexArray.resize(maxBatchSize * vertexSize * 4); // 4 vertices per quad
         elementArray.resize(maxBatchSize * 6); // 6 indices per quad
     }
@@ -242,7 +244,7 @@ private:
 
 class Renderer {
     int32_t maxBatchSize = 0;
-    Ref<Camera> camera;
+    Camera* camera;
     std::vector<QuadRenderBatch> quadBatches;
     glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -251,7 +253,7 @@ class Renderer {
 public:
     Renderer() = default;
 
-    Renderer(int32_t maxBatchSize, const Ref<Camera> &camera,
+    Renderer(int32_t maxBatchSize, Camera *camera,
              const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(maxBatchSize),
                                                                                camera(camera), clearColor(clearColor) {
         if(!initialized) {
@@ -261,8 +263,7 @@ public:
     }
 
 
-    void drawQuad(const glm::vec3 &position, const glm::vec2 scale, const glm::vec4 color,
-                  const Sprite &sprite = Sprite(nullptr)) {
+    void drawQuad(const glm::vec3 &position, const glm::vec2& scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
 
         float zIndex = position.z;
 
@@ -281,7 +282,7 @@ public:
         }
 
         if (!added) {
-            quadBatches.emplace_back(maxBatchSize, camera, zIndex);
+            quadBatches.emplace_back(maxBatchSize, camera, AssetPool::getBundle("resources")->getShader("quads") , zIndex);
             quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords);
         }
 
@@ -327,6 +328,7 @@ public:
         // Enable Anti-Aliasing - todo: implement with framebuffer - also check window class when removing this, line 40
         glEnable(GL_MULTISAMPLE);
 
+        AssetPool::loadBundle("resources");
     }
 };
 

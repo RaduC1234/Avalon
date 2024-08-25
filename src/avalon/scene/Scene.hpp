@@ -1,18 +1,14 @@
 #pragma once
 
+#include "avalon/entity/Registry.hpp"
 #include "avalon/renderer/Renderer.hpp"
 
 #include <GLFW/glfw3.h>
 
-struct SceneContext {
-    GLFWwindow *nativeWindow;
-    std::string &name;
-};
-
 class Scene {
 public:
 
-    explicit Scene(GLFWwindow *glfWwindow) : glfWwindow(glfWwindow) {}
+    Scene() = default;
 
     virtual ~Scene() = default;
 
@@ -27,9 +23,12 @@ public:
     virtual void onDestroy() = 0;
 
 protected:
-
-    GLFWwindow* glfWwindow;
-    Ref<Camera> camera;
+    Camera camera;
     Renderer renderer;
+
     LayerStack layers;
+    Registry registry;
+    ResourceBundle *sceneBundle;
+
+    friend class ImGuiLayer;
 };

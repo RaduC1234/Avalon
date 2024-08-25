@@ -43,5 +43,41 @@ constexpr Ref<T> CreateRef(Args &&... args) {
 template<typename T>
 using WeakRef = std::weak_ptr<T>;
 
+template<typename T>
+class Switch {
+public:
+    using CaseFunction = std::function<void()>;
+
+    // Add a case
+    Switch& Case(const T& value, CaseFunction func) {
+        cases[value] = func;
+        return *this;
+    }
+
+    // Add a default case
+    Switch& Default(CaseFunction func) {
+        defaultCase = func;
+        return *this;
+    }
+
+    // Execute the switch
+    void Execute(const T& value) const {
+        auto it = cases.find(value);
+        if (it != cases.end()) {
+            it->second();
+        } else if (defaultCase) {
+            defaultCase();
+        }
+    }
+
+private:
+    std::unordered_map<T, CaseFunction> cases;
+    CaseFunction defaultCase = nullptr;
+};
+
+template<typename T>
+Switch<T> CreateSwitch() {
+    return Switch<T>();
+}
 
 

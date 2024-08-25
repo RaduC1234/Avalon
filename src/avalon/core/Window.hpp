@@ -30,8 +30,6 @@ public:
     Window(std::string title = "Avalon Window", int width = 1920, int height = 1080, bool vSync = GLFW_TRUE) : title(
             std::move(title)), width(width), height(height), vSync(vSync) {
 
-        Time::init();
-
         glfwInit();
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation

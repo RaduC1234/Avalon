@@ -1,0 +1,9 @@
+{
+  "type" : "sprite_sheet",
+  "texture" : "blocks.png",
+  "sprite_width" : 18,
+  "sprite_height" : 18,
+  "num_x" : 20,
+  "num_y" : 9,
+  "spacing" : 1
+}
