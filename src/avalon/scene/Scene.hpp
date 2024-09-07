@@ -31,4 +31,5 @@ protected:
     ResourceBundle *sceneBundle;
 
     friend class ImGuiLayer;
+    friend class SceneInitializer;
 };

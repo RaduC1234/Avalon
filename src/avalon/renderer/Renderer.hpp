@@ -9,6 +9,7 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <freetype/freetype.h>
 
 #include <imgui.h>
 
@@ -62,6 +63,8 @@ public:
 
     }
 
+#pragma warning(push)
+#pragma warning(disable: 4312)
 
     void start() {
 
@@ -102,6 +105,7 @@ public:
         glBindVertexArray(0); // Unbind the VAO
     }
 
+#pragma warning(pop)
     /**
      * Adds a quad to draw call. Specify null for non texture quad.
      */
@@ -242,6 +246,10 @@ private:
     }
 };
 
+class TextRenderBatch {
+
+};
+
 class Renderer {
     int32_t maxBatchSize = 0;
     Camera* camera;
@@ -288,6 +296,13 @@ public:
 
     }
 
+    void drawText(const glm::vec3 &position, const glm::ivec2& size, const glm::vec4& color, const Font& font, const std::string& text) {
+
+        float zIndex = position.z;
+
+        bool added = false;
+    }
+
     void flush() {
 
         std::sort(quadBatches.begin(), quadBatches.end(),
@@ -327,6 +342,13 @@ public:
 
         // Enable Anti-Aliasing - todo: implement with framebuffer - also check window class when removing this, line 40
         glEnable(GL_MULTISAMPLE);
+
+        // Initialize FreeType
+        FT_Library ft;
+        if (FT_Init_FreeType(&ft)) {
+            std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+            return;
+        }
 
         AssetPool::loadBundle("resources");
     }

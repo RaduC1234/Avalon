@@ -1,92 +1,125 @@
 #pragma once
 
-#include "avalon/core/Core.hpp"
-#include "Entity.hpp"
+#include "Actor.hpp"
 
-using ComponentID = std::type_index;
-
+// The `Registry` class manages the creation, destruction, and component management for entities in a game or simulation.
+// It allows entities to be composed of various components, and provides mechanisms for efficiently iterating over entities
+// that have specific components. This class is central to the Entity-Component-System (ECS) architecture, enabling decoupled management of entity behavior and data.
+//
+// Example Usage:
+//
+// void update(Registry &registry) {
+//     // Retrieve a view of all entities that have both Position and Velocity components.
+//     auto view = registry.view<const Position, Velocity>();
+//
+//     // Example 1: Use a callback to process each entity's components
+//     view.each([](const auto &pos, auto &vel) {
+//         // Example logic: Update velocity based on position
+//         vel.dx += pos.x;
+//         vel.dy += pos.y;
+//     });
+//
+//     // Example 2: Use a range-based for loop to process entities and their components
+//     for (auto [entity, pos, vel] : view.each()) {
+//         // Example logic: Perform operations on each entity
+//     }
+//
+//     // Example 3: Use forward iterators to access and modify individual components
+//     for (auto entity : view) {
+//         auto &vel = view.get<Velocity>(entity);
+//         // Example logic: Modify velocity directly
+//         vel.dx += 1;
+//     }
+// }
+// ```
 class Registry {
 public:
+    Actor createActor();
 
-    Entity createEntity();
-    void destroyEntity(Entity entity);
+    void destroyActor(const Actor &entity);
 
-    template<typename T> void addComponent(Entity entity, T component);
-    template<typename T> void removeComponent(Entity entity);
-    template<typename T> bool hasComponent(Entity entity) const;
-    template<typename T> T& getComponent(Entity entity);
-
-
-    // Add a component to an entity
-    template<typename T>
-    void emplace(Entity entity, T component);
-
-    // View entities with specific components
-    template<typename... Ts>
+    template<typename... Components>
     class View {
     public:
-        View(Registry& registry) : registry(registry) {}
+        View(Registry &registry) : registry(registry) {}
 
+        // Callback-based iteration
+        template<typename Func>
+        void each(Func func) const;
+
+        // Range-based for loop
+        auto each() const;
+
+        // Forward iterators
         class Iterator {
         public:
-            Iterator(Registry& registry, std::vector<Entity>& entities)
-                    : registry(registry), entities(entities), index(0) {
-                // Move to the first valid entity
-                advance_to_valid();
-            }
+            Iterator(typename std::vector<std::tuple<Actor, Components...>>::const_iterator it) : it(it) {}
 
-            bool operator!=(const Iterator& other) const {
-                return index != other.index;
-            }
+            bool operator!=(const Iterator &other) const { return it != other.it; }
 
-            Iterator& operator++() {
-                ++index;
-                advance_to_valid();
+            Iterator &operator++() {
+                ++it;
                 return *this;
             }
 
-            auto operator*() {
-                return get_components();
-            }
+            std::tuple<Actor, Components...> operator*() const { return *it; }
 
         private:
-            void advance_to_valid() {
-                while (index < entities.size() && !has_all_components(entities[index])) {
-                    ++index;
-                }
-            }
-
-            bool has_all_components(Entity entity) const {
-                return ((registry.components.count(typeid(Ts)) && registry.components[typeid(Ts)].count(entity)) && ...);
-            }
-
-            std::tuple<Ts&...> get_components() {
-                return std::tuple<Ts&...>(
-                        registry.get<Ts>(entities[index])...
-                );
-            }
-
-            Registry& registry;
-            std::vector<Entity>& entities;
-            std::size_t index;
+            typename std::vector<std::tuple<Actor, Components...>>::const_iterator it;
         };
 
-        Iterator begin() {
-            return Iterator(registry, registry.entities);
+        Iterator begin() const {
+            return Iterator(data.begin());
         }
 
-        Iterator end() {
-            return Iterator(registry, registry.entities);
+        Iterator end() const {
+            return Iterator(data.end());
+        }
+
+        template<typename T>
+        T &get(Actor entity) const {
+            auto component = entity.getComponent<T>();
+            if (component) {
+                return *component;
+            }
+            return nullptr;
         }
 
     private:
-        Registry& registry;
+        // Base case: No more components to check
+        template<typename Actor, typename Component>
+        bool hasComponent(const Actor &actor) {
+            return actor.getComponent<Component>() != nullptr;
+        }
+
+        /*
+         * Checks recursively if the actor has the components specified
+         */
+        template<typename Actor, typename Component, typename... Components>
+        bool hasAllComponents(const Actor &actor) {
+            return hasComponent<Actor, Component>(actor) && hasAllComponents<Actor, Components...>(actor);
+        }
+
+        // End of recursion
+        template<typename Actor>
+        bool hasAllComponents(const Actor &actor) {
+            return true;
+        }
+
+        Registry &registry;
+        mutable std::vector<std::tuple<Actor, Components...>> data;  // To store entities and their components
     };
 
-    template<typename... Ts>
-    View<Ts...> view() {
-        return View<Ts...>(*this);
+    template<typename... Components>
+    View<Components...> view() {
+        return View<Components...>(*this);
     }
 
+    friend void to_json(json &j, const Registry &registry);
+
+    friend void from_json(const json *j, Registry &registry);
+
 private:
+    std::unordered_map<ActorId, Actor> entities;
+    ActorId nextEntityID = 0;
 };
