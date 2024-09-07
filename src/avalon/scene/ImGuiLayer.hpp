@@ -37,6 +37,9 @@ public:
         //ImGui::ShowDemoWindow(); // Show demo window! :)
 
         ImGui::Begin("Debug Window");
+
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::Text("FPS: %.1f", io.Framerate);
     }
 
     void onImGuiRender() override {

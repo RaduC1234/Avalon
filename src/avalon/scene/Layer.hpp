@@ -30,7 +30,7 @@ public:
 
 
 
-    std::vector<EntityID> entities;
+    std::vector<ActorId> entities;
     int zIndex;
 
     float parallaxOffsetSpeedX = 0.0f;

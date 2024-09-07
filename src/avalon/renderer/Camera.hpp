@@ -46,4 +46,13 @@ public:
     glm::mat4 getProjectionMatrix() const {
         return this->projectionMatrix;
     }
+
+    friend void to_json(json& j, const Camera& c) {
+        j = json{{"position", c.position}};
+    }
+
+    friend void from_json(const json& j, Camera& c) {
+        j.at("position").get_to(c.position);
+        c.adjustProjection();
+    }
 };

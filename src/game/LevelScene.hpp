@@ -10,8 +10,8 @@ public:
 
         layers.pushOverlay(CreateScope<ImGuiLayer>());
 
-        this->camera = Camera(-200, -300);
-        this->renderer = Renderer(1000, &camera);
+        this->levelCamera = Camera(-200, -300);
+        this->renderer = Renderer(1000, &levelCamera);
     }
 
     void onStart() override {
@@ -42,4 +42,7 @@ public:
     void onDestroy() override {
 
     }
+
+private:
+    Camera levelCamera;
 };

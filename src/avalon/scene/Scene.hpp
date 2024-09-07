@@ -23,7 +23,6 @@ public:
     virtual void onDestroy() = 0;
 
 protected:
-    Camera camera;
     Renderer renderer;
 
     LayerStack layers;
@@ -31,4 +30,5 @@ protected:
     ResourceBundle *sceneBundle;
 
     friend class ImGuiLayer;
+    friend class SceneInitializer;
 };
