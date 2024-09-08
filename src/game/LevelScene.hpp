@@ -10,8 +10,8 @@ public:
 
         layers.pushOverlay(CreateScope<ImGuiLayer>());
 
-        this->levelCamera = Camera(-200, -300);
-        this->renderer = Renderer(1000, &levelCamera);
+        this->levelCamera = Camera({-200, -300});
+        this->renderer = Renderer(1000);
     }
 
     void onStart() override {
@@ -32,7 +32,7 @@ public:
     }
 
     void onRender(int screenWidth, int screenHeight) override {
-        renderer.flush();
+        renderer.flush(screenWidth, screenHeight, levelCamera);
 
         for(auto x : layers) {
             x->onImGuiRender();

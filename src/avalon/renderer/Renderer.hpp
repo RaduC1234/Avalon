@@ -9,6 +9,7 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include <utility>
 #include <freetype/freetype.h>
 
 #include <imgui.h>
@@ -30,7 +31,6 @@ class QuadRenderBatch {
     static constexpr int vertexSizeBytes = vertexSize * sizeof(float);
 
     int32_t maxBatchSize = 0;
-    Camera *camera;
 
     std::vector<float> vertexArray;
     uint32_t index = 0; // holds the drawing index in the element array
@@ -50,8 +50,9 @@ public:
     QuadRenderBatch() = default;
 
 
-    QuadRenderBatch(int32_t maxBatchSize, Camera* camera, Ref<Shader> quadShader, int zIndex) : maxBatchSize(maxBatchSize),
-                                                                                   camera(camera), shader(quadShader), zIndex(zIndex) {
+    QuadRenderBatch(int32_t maxBatchSize, Ref<Shader> quadShader, int zIndex) : maxBatchSize(maxBatchSize),
+                                                                                shader(std::move(quadShader)),
+                                                                                zIndex(zIndex) {
         vertexArray.resize(maxBatchSize * vertexSize * 4); // 4 vertices per quad
         elementArray.resize(maxBatchSize * 6); // 6 indices per quad
     }
@@ -106,6 +107,7 @@ public:
     }
 
 #pragma warning(pop)
+
     /**
      * Adds a quad to draw call. Specify null for non texture quad.
      */
@@ -174,11 +176,13 @@ public:
 
     }
 
-    void render() {
+    void render(int screenWidth, int screenHeight, Camera &camera) {
         shader->bind();
 
-        shader->uploadMat4f("uProjection", camera->getProjectionMatrix());
-        shader->uploadMat4f("uView", camera->getViewMatrix());
+       // camera.applyViewport(screenWidth, screenHeight);
+
+        shader->uploadMat4f("uProjection", camera.getProjectionMatrix());
+        shader->uploadMat4f("uView", camera.getViewMatrix());
         shader->uploadFloat("uTime", Time::getTime());
 
         for (int i = 0; i < textures.size(); i++) {
@@ -252,7 +256,6 @@ class TextRenderBatch {
 
 class Renderer {
     int32_t maxBatchSize = 0;
-    Camera* camera;
     std::vector<QuadRenderBatch> quadBatches;
     glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
 
@@ -261,17 +264,17 @@ class Renderer {
 public:
     Renderer() = default;
 
-    Renderer(int32_t maxBatchSize, Camera *camera,
-             const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(maxBatchSize),
-                                                                               camera(camera), clearColor(clearColor) {
-        if(!initialized) {
+    Renderer(int32_t maxBatchSize, const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(
+            maxBatchSize), clearColor(clearColor) {
+        if (!initialized) {
             Renderer::init();
             initialized = true;
         }
     }
 
 
-    void drawQuad(const glm::vec3 &position, const glm::vec2& scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
+    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color,
+                  const Sprite &sprite = Sprite(nullptr)) {
 
         float zIndex = position.z;
 
@@ -290,20 +293,21 @@ public:
         }
 
         if (!added) {
-            quadBatches.emplace_back(maxBatchSize, camera, AssetPool::getBundle("resources")->getShader("quads") , zIndex);
+            quadBatches.emplace_back(maxBatchSize, AssetPool::getBundle("resources")->getShader("quads"), zIndex);
             quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords);
         }
 
     }
 
-    void drawText(const glm::vec3 &position, const glm::ivec2& size, const glm::vec4& color, const Font& font, const std::string& text) {
+    void drawText(const glm::vec3 &position, const glm::ivec2 &size, const glm::vec4 &color, const Font &font,
+                  const std::string &text) {
 
         float zIndex = position.z;
 
         bool added = false;
     }
 
-    void flush() {
+    void flush(int screenWidth, int screenHeight, Camera &camera) {
 
         std::sort(quadBatches.begin(), quadBatches.end(),
                   [](const QuadRenderBatch &a, const QuadRenderBatch &b) {
@@ -315,7 +319,7 @@ public:
 
         for (auto &batch: quadBatches) {
             batch.start();
-            batch.render();
+            batch.render(screenWidth, screenHeight, camera);
         }
         quadBatches.clear();
 

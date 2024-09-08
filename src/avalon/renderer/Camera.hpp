@@ -3,40 +3,34 @@
 #include "glm/ext/matrix_clip_space.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
-#define TILES_HORIZONTALLY 40.0f
-#define TILES_VERTICALLY 21.0f
-
-#define TILE_SIZE 32.0f // in pixels
-
 class Camera {
 public:
-    glm::mat4 projectionMatrix{}, viewMatrix{};
-    glm::vec2 position{};
-
 
     Camera() = default;
 
-    Camera(const float x, const float y) {
-        position.x = x;
-        position.y = y;
+    Camera(const glm::vec2 &worldPosition, const glm::vec2 &worldSize = {1920, 1080}/*, bool worldCentered = false*/,
+           const glm::vec2 &screenPosition = {0.0f, 0.0f}, const glm::vec2 &screenSize = {1.0f, 1.0f})
+            : worldPosition(worldPosition), worldSize(worldSize),
+              screenPosition(screenPosition), screenSize(screenSize) {
         adjustProjection();
     }
 
-    explicit Camera(const glm::vec2 &position) : position(position) {
-        adjustProjection();
-    }
 
+    void adjustProjection() {
+        float left = worldPosition.x;
+        float right = worldPosition.x + worldSize.x * screenSize.x;
+        float bottom = worldPosition.y;
+        float top = worldPosition.y + worldSize.y * screenSize.y;
 
-    void adjustProjection() {      // left,         right,                 bottom,        top,                near,    far
-        projectionMatrix = glm::ortho(0.0f, TILE_SIZE * TILES_HORIZONTALLY, 0.0f, TILE_SIZE * TILES_VERTICALLY, 0.0f,100.0f);
+        projectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 100.0f);
     }
 
     glm::mat4 getViewMatrix() {
         glm::vec3 cameraFront(0.0f, 0.0f, -1.0f);
         glm::vec3 cameraUp(0.0f, 1.0f, 0.0f);
         viewMatrix = glm::lookAt(
-                glm::vec3(position.x, position.y, 20.0f),
-                cameraFront + glm::vec3(position.x, position.y, 0.0f),
+                glm::vec3(worldPosition.x, worldPosition.y, 20.0f),
+                cameraFront + glm::vec3(worldPosition.x, worldPosition.y, 0.0f),
                 cameraUp
         );
 
@@ -47,12 +41,8 @@ public:
         return this->projectionMatrix;
     }
 
-    friend void to_json(json& j, const Camera& c) {
-        j = json{{"position", c.position}};
-    }
-
-    friend void from_json(const json& j, Camera& c) {
-        j.at("position").get_to(c.position);
-        c.adjustProjection();
-    }
+private:
+    glm::mat4 projectionMatrix, viewMatrix;
+    glm::vec2 worldPosition, worldSize;
+    glm::vec2 screenPosition, screenSize;
 };
