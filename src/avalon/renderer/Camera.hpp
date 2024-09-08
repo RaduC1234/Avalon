@@ -1,29 +1,42 @@
 #pragma once
 
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glad/glad.h>
 
 class Camera {
 public:
-
     Camera() = default;
 
-    Camera(const glm::vec2 &worldPosition, const glm::vec2 &worldSize = {1920, 1080}/*, bool worldCentered = false*/,
-           const glm::vec2 &screenPosition = {0.0f, 0.0f}, const glm::vec2 &screenSize = {1.0f, 1.0f})
-            : worldPosition(worldPosition), worldSize(worldSize),
-              screenPosition(screenPosition), screenSize(screenSize) {
-        adjustProjection();
-    }
+    Camera(const glm::vec2 &worldPosition, float zoom = 1.0f) : worldPosition(worldPosition), zoomFactor(zoom) {}
 
+    /*
+     * You don't t need to call this.
+     */
+    void applyViewport(int windowWidth, int windowHeight) {
 
-    void adjustProjection() {
-        float left = worldPosition.x;
-        float right = worldPosition.x + worldSize.x * screenSize.x;
-        float bottom = worldPosition.y;
-        float top = worldPosition.y + worldSize.y * screenSize.y;
+        // Determine the size of the viewport to maintain a 1:1 aspect ratio
+        float viewportSize = std::min(windowWidth, windowHeight);
+
+        // Center the viewport within the window
+        int xOffset = (windowWidth - viewportSize) / 2;
+        int yOffset = (windowHeight - viewportSize) / 2;
+
+        // Set the OpenGL viewport
+        glViewport(xOffset, yOffset, static_cast<GLsizei>(viewportSize), static_cast<GLsizei>(viewportSize));
+
+        // Adjust the projection matrix for a 1:1 aspect ratio
+        float aspectRatio = 1.0f; // Fixed 1:1 aspect ratio
+        float halfWidth = (viewportSize * zoomFactor) * 0.5f;
+        float halfHeight = halfWidth / aspectRatio;
+
+        float left = worldPosition.x - halfWidth;
+        float right = worldPosition.x + halfWidth;
+        float bottom = worldPosition.y - halfHeight;
+        float top = worldPosition.y + halfHeight;
 
         projectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 100.0f);
     }
+
 
     glm::mat4 getViewMatrix() {
         glm::vec3 cameraFront(0.0f, 0.0f, -1.0f);
@@ -38,11 +51,23 @@ public:
     }
 
     glm::mat4 getProjectionMatrix() const {
-        return this->projectionMatrix;
+        return projectionMatrix;
+    }
+
+    void setPosition(const glm::vec2 &position) {
+        worldPosition = position;
+    }
+
+    void zoom(float factor) {
+        zoomFactor *= factor;
+    }
+
+    void position(const glm::vec2 &offset) {
+        worldPosition += offset;
     }
 
 private:
     glm::mat4 projectionMatrix, viewMatrix;
-    glm::vec2 worldPosition, worldSize;
-    glm::vec2 screenPosition, screenSize;
+    glm::vec2 worldPosition;
+    float zoomFactor;
 };

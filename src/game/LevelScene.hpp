@@ -10,7 +10,7 @@ public:
 
         layers.pushOverlay(CreateScope<ImGuiLayer>());
 
-        this->levelCamera = Camera({-200, -300});
+        this->levelCamera = Camera({0, 0});
         this->renderer = Renderer(1000);
     }
 

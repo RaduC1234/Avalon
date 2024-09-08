@@ -125,10 +125,9 @@ public:
         });
 
 
-        glfwSetFramebufferSizeCallback(glfwWindow, [](GLFWwindow *window, int l_width, int l_height) {
+/*        glfwSetFramebufferSizeCallback(glfwWindow, [](GLFWwindow *window, int l_width, int l_height) {
             glViewport(0, 0, l_width, l_height);
-        });
-
+        });*/
 
 
         // enable v-sync

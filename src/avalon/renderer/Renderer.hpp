@@ -7,12 +7,10 @@
 #include "avalon/components/RenderComponent.hpp"
 #include "avalon/utils/PlatformUtils.hpp"
 
+#include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <utility>
 #include <freetype/freetype.h>
-
-#include <imgui.h>
 
 
 class QuadRenderBatch {
@@ -82,8 +80,7 @@ public:
         generateIndices();
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementArray.size() * sizeof(uint32_t), &(elementArray[0]),
-                     GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementArray.size() * sizeof(uint32_t), &(elementArray[0]), GL_STATIC_DRAW);
 
         // bind position on location 0
         glVertexAttribPointer(0, positionSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) positionOffset);
@@ -179,11 +176,15 @@ public:
     void render(int screenWidth, int screenHeight, Camera &camera) {
         shader->bind();
 
-       // camera.applyViewport(screenWidth, screenHeight);
+        camera.applyViewport(screenWidth, screenHeight);
 
         shader->uploadMat4f("uProjection", camera.getProjectionMatrix());
         shader->uploadMat4f("uView", camera.getViewMatrix());
         shader->uploadFloat("uTime", Time::getTime());
+
+
+/*        GLint maxViewportDims[2];
+        glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxViewportDims);*/
 
         for (int i = 0; i < textures.size(); i++) {
             glActiveTexture(GL_TEXTURE0 + i + 1);
