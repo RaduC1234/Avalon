@@ -1,27 +1,44 @@
 #pragma once
 
-#include "glm/ext/matrix_clip_space.hpp"
-#include "glm/ext/matrix_transform.hpp"
+#include <glm/glm.hpp>
+#include <glad/glad.h>
 
 class Camera {
 public:
-
     Camera() = default;
 
-    Camera(const glm::vec2 &worldPosition, const glm::vec2 &worldSize = {1920, 1080}/*, bool worldCentered = false*/,
-           const glm::vec2 &screenPosition = {0.0f, 0.0f}, const glm::vec2 &screenSize = {1.0f, 1.0f})
-            : worldPosition(worldPosition), worldSize(worldSize),
-              screenPosition(screenPosition), screenSize(screenSize) {
-        adjustProjection();
-    }
+    Camera(const glm::vec2 &worldPosition, float zoom = 1.0f) : worldPosition(worldPosition), zoomFactor(zoom) {}
 
 
-    void adjustProjection() {
-        float left = worldPosition.x;
-        float right = worldPosition.x + worldSize.x * screenSize.x;
-        float bottom = worldPosition.y;
-        float top = worldPosition.y + worldSize.y * screenSize.y;
+    void applyViewport(int windowWidth, int windowHeight, float desiredAspectRatio = 16.0f / 9.0f) {
+        float viewportWidth, viewportHeight;
 
+        // Crop horizontally if the desired aspect ratio < window
+        if (static_cast<float>(windowWidth) / windowHeight > desiredAspectRatio) {
+            viewportHeight = static_cast<float>(windowHeight);
+            viewportWidth = viewportHeight * desiredAspectRatio;
+        } else {
+            // Crop vertically if the desired aspect ratio < window
+            viewportWidth = static_cast<float>(windowWidth);
+            viewportHeight = viewportWidth / desiredAspectRatio;
+        }
+
+        // Center the viewport within the window
+        int xOffset = (windowWidth - static_cast<int>(viewportWidth)) / 2;
+        int yOffset = (windowHeight - static_cast<int>(viewportHeight)) / 2;
+
+        glViewport(xOffset, yOffset, static_cast<GLsizei>(viewportWidth), static_cast<GLsizei>(viewportHeight));
+        //glViewport(0, 0, static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
+
+        float halfWidth = viewportWidth / this->zoomFactor * 0.5f;
+        float halfHeight = viewportHeight / this->zoomFactor * 0.5f;
+
+        float left = worldPosition.x - halfWidth;
+        float right = worldPosition.x + halfWidth;
+        float bottom = worldPosition.y - halfHeight;
+        float top = worldPosition.y + halfHeight;
+
+        // Update the projection matrix
         projectionMatrix = glm::ortho(left, right, bottom, top, 0.0f, 100.0f);
     }
 
@@ -38,11 +55,23 @@ public:
     }
 
     glm::mat4 getProjectionMatrix() const {
-        return this->projectionMatrix;
+        return projectionMatrix;
+    }
+
+    void setPosition(const glm::vec2 &position) {
+        worldPosition = position;
+    }
+
+    void zoom(float factor) {
+        zoomFactor *= factor;
+    }
+
+    void position(const glm::vec2 &offset) {
+        worldPosition += offset;
     }
 
 private:
     glm::mat4 projectionMatrix, viewMatrix;
-    glm::vec2 worldPosition, worldSize;
-    glm::vec2 screenPosition, screenSize;
+    glm::vec2 worldPosition;
+    float zoomFactor;
 };

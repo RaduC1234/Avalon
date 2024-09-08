@@ -1,18 +1,16 @@
 #pragma once
 
-#include "avalon/scene/Layer.hpp"
+#include "Core.hpp"
 
 #include "GLFW/glfw3.h"
 
-#include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include "avalon/core/Application.hpp"
 
-class ImGuiLayer : public Layer {
+class ImGuiLayer {
 public:
 
-    void onAttach() override {
+    void onAttach(GLFWwindow* glfWwindow) {
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
@@ -23,11 +21,11 @@ public:
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
 
         // Setup Platform/Renderer backends
-        ImGui_ImplGlfw_InitForOpenGL(Application::getInstance()->getWindow().getNativeWindow(), true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
+        ImGui_ImplGlfw_InitForOpenGL(glfWwindow, true);          // Second param install_callback=true will install GLFW callbacks and chain to existing ones.
         ImGui_ImplOpenGL3_Init();
     }
 
-    void onUpdate(float deltaTime) override {
+    void onUpdate(float deltaTime) {
         // (Your code calls glfwPollEvents())
         // ...
         // Start the Dear ImGui frame
@@ -40,9 +38,10 @@ public:
 
         ImGuiIO& io = ImGui::GetIO();
         ImGui::Text("FPS: %.1f", io.Framerate);
+        ImGui::Text("ScreenX: %.1f, ScreenY: %1.f", InputListeners::getInstance().getX(), InputListeners::getInstance().getY());
     }
 
-    void onImGuiRender() override {
+    void onImGuiRender() {
         ImGui::End();
         // Rendering
         // (Your code clears your framebuffer, renders your other stuff etc.)
@@ -51,7 +50,7 @@ public:
         // (Your code calls glfwSwapBuffers() etc.)
     }
 
-    void onDetach() override {
+    void onDetach()  {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();

@@ -7,12 +7,10 @@
 #include "avalon/components/RenderComponent.hpp"
 #include "avalon/utils/PlatformUtils.hpp"
 
+#include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <utility>
 #include <freetype/freetype.h>
-
-#include <imgui.h>
 
 
 class QuadRenderBatch {
@@ -21,13 +19,16 @@ class QuadRenderBatch {
     static constexpr int colorSize = 4;
     static constexpr int texCoordsSize = 2;
     static constexpr int texIDSize = 1;
+    static constexpr int isNormalizedFlagSize = 1;
 
     static constexpr int positionOffset = 0;
     static constexpr int colorOffset = positionOffset + positionSize * sizeof(float);
     static constexpr int texCoordsOffset = colorOffset + colorSize * sizeof(float);
     static constexpr int texIDOffset = texCoordsOffset + texCoordsSize * sizeof(float);
+    static constexpr int isNormalizedOffset = texIDOffset + texIDSize * sizeof(float);
 
-    static constexpr int vertexSize = positionSize + colorSize + texCoordsSize + texIDSize;
+
+    static constexpr int vertexSize = positionSize + colorSize + texCoordsSize + texIDSize + isNormalizedFlagSize;
     static constexpr int vertexSizeBytes = vertexSize * sizeof(float);
 
     int32_t maxBatchSize = 0;
@@ -82,8 +83,7 @@ public:
         generateIndices();
         glGenBuffers(1, &EBO);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementArray.size() * sizeof(uint32_t), &(elementArray[0]),
-                     GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementArray.size() * sizeof(uint32_t), &(elementArray[0]), GL_STATIC_DRAW);
 
         // bind position on location 0
         glVertexAttribPointer(0, positionSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) positionOffset);
@@ -97,9 +97,13 @@ public:
         glVertexAttribPointer(2, texCoordsSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) texCoordsOffset);
         glEnableVertexAttribArray(2);
 
-        // bind color on location 3
+        // bind texID on location 3
         glVertexAttribPointer(3, texIDSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) texIDOffset);
         glEnableVertexAttribArray(3);
+
+        // bind normalized flag on location 4
+        glVertexAttribPointer(4, isNormalizedFlagSize, GL_FLOAT, GL_FALSE, vertexSizeBytes, (void *) isNormalizedOffset);
+        glEnableVertexAttribArray(4);
 
 
         glBindBuffer(GL_ARRAY_BUFFER, 0); // Unbind the VBO
@@ -111,8 +115,7 @@ public:
     /**
      * Adds a quad to draw call. Specify null for non texture quad.
      */
-    void addQuad(const glm::vec2 &position, const glm::vec2 scale, const glm::vec4 color, const Ref<Texture> &texture,
-                 std::array<glm::vec2, 4> texCoords) {
+    void addQuad(const glm::vec2 &position, const glm::vec2 scale, const glm::vec4 color, const Ref<Texture> &texture, std::array<glm::vec2, 4> texCoords, bool normalized = false) {
 
         int texId = 0;
 
@@ -167,6 +170,9 @@ public:
             // Load text id
             vertexArray[offset + 9] = texId;
 
+            // Load isNormalized Flag
+            vertexArray[offset + 10] = normalized? 1.0f : 0.0f;
+
             offset += vertexSize;
         }
         index++;
@@ -179,11 +185,18 @@ public:
     void render(int screenWidth, int screenHeight, Camera &camera) {
         shader->bind();
 
-       // camera.applyViewport(screenWidth, screenHeight);
+        camera.applyViewport(screenWidth, screenHeight);
 
-        shader->uploadMat4f("uProjection", camera.getProjectionMatrix());
+        glm::mat4 uiProjectionMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(screenWidth, screenHeight, 1.0f));
+
+        shader->uploadMat4f("uWorldProjection", camera.getProjectionMatrix());
         shader->uploadMat4f("uView", camera.getViewMatrix());
+        shader->uploadMat4f("uNormalizedProjection", uiProjectionMatrix);
         shader->uploadFloat("uTime", Time::getTime());
+
+
+/*        GLint maxViewportDims[2];
+        glGetIntegerv(GL_MAX_VIEWPORT_DIMS, maxViewportDims);*/
 
         for (int i = 0; i < textures.size(); i++) {
             glActiveTexture(GL_TEXTURE0 + i + 1);
@@ -264,8 +277,7 @@ class Renderer {
 public:
     Renderer() = default;
 
-    Renderer(int32_t maxBatchSize, const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(
-            maxBatchSize), clearColor(clearColor) {
+    Renderer(int32_t maxBatchSize, const glm::vec4 clearColor = {0.0863f, 0.0863f, 0.0863f, 1.0f}) : maxBatchSize(maxBatchSize), clearColor(clearColor) {
         if (!initialized) {
             Renderer::init();
             initialized = true;
@@ -273,8 +285,7 @@ public:
     }
 
 
-    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color,
-                  const Sprite &sprite = Sprite(nullptr)) {
+    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr), bool normalized = false) {
 
         float zIndex = position.z;
 
@@ -285,7 +296,7 @@ public:
 
                 // if quad has no texture
                 if (texture == nullptr || (x.hasTexture(texture) || x.hasTextureRoom())) {
-                    x.addQuad(position, scale, color, sprite.texture, sprite.texCoords);
+                    x.addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
                     added = true;
                     break;
                 }
@@ -294,13 +305,12 @@ public:
 
         if (!added) {
             quadBatches.emplace_back(maxBatchSize, AssetPool::getBundle("resources")->getShader("quads"), zIndex);
-            quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords);
+            quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
         }
 
     }
 
-    void drawText(const glm::vec3 &position, const glm::ivec2 &size, const glm::vec4 &color, const Font &font,
-                  const std::string &text) {
+    void drawText(const glm::vec3 &position, const glm::ivec2 &size, const glm::vec4 &color, const Font &font, const std::string &text, bool normalized = false) {
 
         float zIndex = position.z;
 
@@ -340,6 +350,7 @@ public:
         glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
         AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
 
+        glDisable(GL_DEPTH_TEST);
         // enable transparency
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

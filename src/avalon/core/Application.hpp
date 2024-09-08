@@ -2,6 +2,7 @@
 
 #include "Core.hpp"
 #include "Window.hpp"
+#include "ImGuiLayer.hpp"
 
 struct ApplicationSpecification {
     std::string name = "Avalon Window";
@@ -28,6 +29,7 @@ private:
 
     Scope<Window> window;
     Scope<Scene> currentScene;
+    ImGuiLayer imGuiLayer;
 
     ApplicationSpecification specification;
     bool isRunning = true;

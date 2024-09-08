@@ -18,6 +18,8 @@
 
 #include "avalon/event/InputListeners.hpp"
 
+#include <imgui.h>
+
 #include <glm/glm.hpp>
 
 #include <nlohmann/json.hpp>

@@ -10,6 +10,8 @@ Application::Application(const ApplicationSpecification& specification) : specif
 
     this->window = CreateScope<Window>(specification.name);
 
+    this->imGuiLayer.onAttach(this->window->getNativeWindow());
+
     isRunning = true;
 }
 
@@ -19,11 +21,17 @@ void Application::run() {
     float dt = -1.0f;
 
     while (isRunning) {
+
+        this->imGuiLayer.onUpdate(dt);
+
         // todo: double buffering
         if (dt >= 0 && currentScene != nullptr) {
             this->currentScene->onUpdate(dt);
             this->currentScene->onRender(window->getWidth(), window->getHeight());
         }
+
+
+        this->imGuiLayer.onImGuiRender();
 
         this->window->onUpdate();
 
@@ -32,6 +40,7 @@ void Application::run() {
         beginTime = endTime;
     }
 
+    this->imGuiLayer.onDetach();
     AssetPool::unloadAll();
 }
 
