@@ -1,13 +1,14 @@
 #type vertex
 #version 330 core
 layout (location = 0) in vec4 aVertex; // <vec2 pos, vec2 tex>
-out vec2 fTexCoords;
 
-uniform mat4 projection;
+uniform mat4 uProjection;
+
+out vec2 fTexCoords;
 
 void main()
 {
-    gl_Position = projection * vec4(aVertex.xy, 0.0, 1.0);
+    gl_Position = uProjection * vec4(aVertex.xy, 0.0, 1.0);
     fTexCoords = aVertex.zw;
 }
 
@@ -18,11 +19,11 @@ in vec2 fTexCoords;
 
 out vec4 color;
 
-uniform sampler2D text;
-uniform vec3 textColor;
+uniform sampler2D uText;
+uniform vec3 uTextColor;
 
 void main()
 {
-    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, fTexCoords).r);
-    color = vec4(textColor, 1.0) * sampled;
+    vec4 sampled = vec4(1.0, 1.0, 1.0, texture(uText, fTexCoords).r);
+    color = vec4(uTextColor, 1.0) * sampled;
 }

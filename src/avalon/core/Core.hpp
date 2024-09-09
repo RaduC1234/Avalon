@@ -13,6 +13,7 @@
 #include <chrono>
 #include <utility>
 #include <typeindex>
+#include <variant>
 
 #include "Log.hpp"
 

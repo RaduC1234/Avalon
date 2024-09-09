@@ -2,6 +2,7 @@
 
 #include "avalon/entity/Registry.hpp"
 #include "avalon/renderer/Renderer.hpp"
+#include "Layer.hpp"
 
 #include <GLFW/glfw3.h>
 

@@ -30,7 +30,7 @@ public:
             levelCamera.position({0, -deltaTime * 200.0f});
 
 
-        renderer.drawQuad({0.0f, 0.0f, 1}, {1.0f, 1.0f}, Color(1.0f, 0.0f, 1.0f, 0.5f), Sprite(nullptr), true);
+        renderer.drawNormalizedQuad({0.0f, 0.0f, 1}, {1.0f, 1.0f}, Color(1.0f, 0.0f, 1.0f, 0.5f));
 
         renderer.drawQuad({150, 0, 2}, {100, 100},  Color(210, 109, 101, 150)); // red
         renderer.drawQuad({225, 0, 1}, {100, 100},  Color(136, 193, 99, 50)); // green
