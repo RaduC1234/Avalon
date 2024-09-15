@@ -28,7 +28,7 @@ protected:
 
     LayerStack layers;
     Registry registry;
-    ResourceBundle *sceneBundle;
+    ResourceBundle *resourceBundle;
 
     friend class ImGuiLayer;
     friend class SceneInitializer;

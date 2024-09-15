@@ -17,19 +17,20 @@ public:
         }
     }
 
-    void drawNormalizedQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
-        drawQuad(position, scale, color, sprite, true);
-    }
-
     void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
         drawQuad(position, scale, color, sprite, false);
     }
 
-    void drawText(const glm::vec3 &position, const glm::ivec2 &size, const glm::vec4 &color, const Font &font, const std::string &text, bool normalized = false) {
+    void drawNormalizedQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
+        drawQuad(position, scale, color, sprite, true);
+    }
 
-        float zIndex = position.z;
+    void drawText(const glm::vec3 & position, int size, const glm::vec4 & color, const Font & font, const std::string & text) {
+        drawText(position, size, color, font, text, false);
+    }
 
-        bool added = false;
+    void drawNormalizedText(const glm::vec3 & position, int size, const glm::vec4 & color, const Font & font, const std::string & text) {
+        drawText(position, size, color, font, text, true);
     }
 
     void flush(int screenWidth, int screenHeight, Camera &camera) {
@@ -56,7 +57,7 @@ public:
 
 private:
 
-// main function
+    // main function
     void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 &color, const Sprite &sprite, bool normalized) {
         float zIndex = position.z;
         bool added = false;
@@ -94,6 +95,27 @@ private:
         }
     }
 
+    void drawText(const glm::vec3 &position, int size, const glm::vec4 &color, const Font &font, const std::string &text, bool normalized = false) {
+
+        float zIndex = position.z;
+
+        bool added = false;
+
+
+        for(auto& batch : renderBatches) {
+
+            if(batch->getBatchType() != RenderType::TEXT)
+                continue;
+
+            auto* textBatch = dynamic_cast<TextRenderBatch*>(batch.get());
+            if(textBatch->getFont() == font && textBatch->getZIndex() == zIndex) {
+                textBatch->addText(position, size, color, text, font, normalized);
+                added = true;
+                break;
+            }
+        }
+
+    }
 
     void static init() {
 
@@ -117,13 +139,6 @@ private:
         // Enable Anti-Aliasing - todo: implement with framebuffer - also check window class when removing this, line 40
         glEnable(GL_MULTISAMPLE);
 
-        // Initialize FreeType
-        FT_Library ft;
-        if (FT_Init_FreeType(&ft)) {
-            std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-            return;
-        }
-
         AssetPool::loadBundle("resources");
     }
 
@@ -134,5 +149,7 @@ private:
 
     inline static bool initialized = false;
     inline static int maxTextureSlots = 0;
+
+    friend class ImGuiLayer;
 };
 

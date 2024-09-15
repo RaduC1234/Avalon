@@ -8,7 +8,8 @@
 #include <glm/glm.hpp>
 
 enum Shape {
-    QUAD
+    QUAD,
+    TEXT
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM( Shape, {
