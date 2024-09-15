@@ -32,9 +32,10 @@ public:
 
         glfwInit();
         glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
-        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE); // make window maximized
+        glfwWindowHint(GLFW_MAXIMIZED, GLFW_FALSE); // make window maximized
         glfwWindowHint(GLFW_SAMPLES, 4);  // Request 4x MSAA for Anti-Aliasing
 
         this->glfwWindow = glfwCreateWindow(this->width, this->height, this->title.c_str(), NULL, NULL);
@@ -134,6 +135,7 @@ public:
         glfwSwapInterval(1);
 
         glfwShowWindow(glfwWindow);
+        glfwMaximizeWindow(glfwWindow); // this fixes the wrong scaling issues in Camera
 
     }
 

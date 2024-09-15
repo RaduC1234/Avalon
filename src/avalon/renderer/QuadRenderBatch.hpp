@@ -216,7 +216,7 @@ public:
     }
 
 private:
-    void generateIndices() {
+    constexpr void generateIndices() {
         /**
          * Vertex 0: Top-right corner.
          * Vertex 1: Bottom-right corner.

@@ -31,12 +31,16 @@ public:
 
     }
 
-    Ref<Texture> getTexture(const std::string &name) {
-        return nullptr;
+    Ref<Texture> getTexture(const std::string &filePath) {
+        return textures[filePath];
     }
 
-    Ref<Sprite> getSprite() {
-        return nullptr;
+    Sprite getSprite(const std::string& filePath, int index) {
+        for (auto &x: sprites) {
+            if (x.texture->getFilePath() == filePath && x.index == index) {
+                return x;
+            }
+        }
     }
 
     Ref<Shader> getShader(const std::string &name) {

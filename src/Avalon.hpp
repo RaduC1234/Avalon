@@ -2,6 +2,8 @@
 
 #include "avalon/core/Application.hpp"
 
+#include "avalon/utils/PlatformUtils.hpp"
+
 // Entry point
 #include "avalon/core/EntryPoint.hpp"
 

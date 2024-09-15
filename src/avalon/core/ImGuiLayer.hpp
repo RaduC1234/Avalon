@@ -10,12 +10,12 @@
 class ImGuiLayer {
 public:
 
-    void onAttach(GLFWwindow* glfWwindow) {
+    void onAttach(GLFWwindow *glfWwindow) {
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // IF using Docking Branch
@@ -36,9 +36,10 @@ public:
 
         ImGui::Begin("Debug Window");
 
-        ImGuiIO& io = ImGui::GetIO();
+        ImGuiIO &io = ImGui::GetIO();
         ImGui::Text("FPS: %.1f", io.Framerate);
-        ImGui::Text("ScreenX: %.1f, ScreenY: %1.f", InputListeners::getInstance().getX(), InputListeners::getInstance().getY());
+        ImGui::Text("Screen: (%1.f, %1.f)", InputListeners::getInstance().getX(), InputListeners::getInstance().getY());
+
     }
 
     void onImGuiRender() {
@@ -50,7 +51,7 @@ public:
         // (Your code calls glfwSwapBuffers() etc.)
     }
 
-    void onDetach()  {
+    void onDetach() {
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
