@@ -7,6 +7,8 @@
 #include "Texture.hpp"
 #include "glm/vec2.hpp"
 
+using TextureCoords = std::array<glm::vec2, 4>;
+
 class Sprite {
 public:
 

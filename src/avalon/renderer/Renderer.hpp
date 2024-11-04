@@ -1,12 +1,16 @@
 #pragma once
 
-#include "QuadRenderBatch.hpp"
-#include "TextRenderBatch.hpp"
-#include "Sprite.hpp"
-
+#include "RenderBatch.hpp"
 #include "avalon/utils/AssetPool.hpp"
 
+
 class Renderer {
+    int32_t maxBatchSize = 0;
+    std::vector<RenderBatch> quadBatches;
+    glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
+
+    inline static bool initialized = false;
+
 public:
     Renderer() = default;
 
@@ -17,65 +21,19 @@ public:
         }
     }
 
-    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
-        drawQuad(position, scale, color, sprite, false);
-    }
 
-    void drawNormalizedQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr)) {
-        drawQuad(position, scale, color, sprite, true);
-    }
+    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr), bool normalized = false) {
 
-    void drawText(const glm::vec3 & position, int size, const glm::vec4 & color, const Font & font, const std::string & text) {
-        drawText(position, size, color, font, text, false);
-    }
-
-    void drawNormalizedText(const glm::vec3 & position, int size, const glm::vec4 & color, const Font & font, const std::string & text) {
-        drawText(position, size, color, font, text, true);
-    }
-
-    void flush(int screenWidth, int screenHeight, Camera &camera) {
-
-        std::sort(renderBatches.begin(), renderBatches.end(),
-                  [](Scope<RenderBatch> &a, Scope<RenderBatch> &b) {
-                      return a->getZIndex() > b->getZIndex();
-                  });
-
-        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        for (auto &batch: renderBatches) {
-            batch->start();
-            batch->render(screenWidth, screenHeight, camera);
-        }
-        renderBatches.clear();
-
-        GLenum err;
-        if ((err = glGetError()) != GL_NO_ERROR) {
-            AV_CORE_ERROR("OpenGL error: {0}", err);
-        }
-    }
-
-private:
-
-    // main function
-    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 &color, const Sprite &sprite, bool normalized) {
         float zIndex = position.z;
+
         bool added = false;
-
-
-        for (auto &batch: renderBatches) {
-
-            if (batch->getBatchType() != RenderType::QUAD)
-                continue;
-
-
-            auto *quadBatch = dynamic_cast<QuadRenderBatch *>(batch.get());
-            if (quadBatch && !quadBatch->isFull() && quadBatch->getZIndex() == zIndex) {
+        for (auto &x: quadBatches) {
+            if (!x.isFull() && x.getZIndex() == zIndex) {
                 auto &texture = sprite.texture;
 
-
-                if (!texture || quadBatch->hasTexture(texture) || quadBatch->hasTextureRoom()) {
-                    quadBatch->addQuad(position, scale, color, texture, sprite.texCoords, normalized);
+                // if quad has no texture
+                if (texture == nullptr || (x.hasTexture(texture) || x.hasTextureRoom())) {
+                    x.addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
                     added = true;
                     break;
                 }
@@ -83,38 +41,39 @@ private:
         }
 
         if (!added) {
-
-            auto quadBatch = CreateScope<QuadRenderBatch>(
-                    maxBatchSize,
-                    AssetPool::getBundle("resources")->getShader("quads"),
-                    zIndex
-            );
-            quadBatch->addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
-
-            renderBatches.push_back(std::unique_ptr<RenderBatch>(std::move(quadBatch)));
+            quadBatches.emplace_back(maxBatchSize, AssetPool::getBundle("resources")->getShader("render"), zIndex);
+            quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
         }
+
     }
 
-    void drawText(const glm::vec3 &position, int size, const glm::vec4 &color, const Font &font, const std::string &text, bool normalized = false) {
+    void drawText(const glm::vec3 &position, const glm::ivec2 &size, const glm::vec4 &color, const Font &font, const std::string &text, bool normalized = false) {
 
         float zIndex = position.z;
 
         bool added = false;
+    }
 
+    void flush(int screenWidth, int screenHeight, Camera &camera) {
 
-        for(auto& batch : renderBatches) {
+        std::sort(quadBatches.begin(), quadBatches.end(),
+                  [](const RenderBatch &a, const RenderBatch &b) {
+                      return a.getZIndex() > b.getZIndex();
+                  });
 
-            if(batch->getBatchType() != RenderType::TEXT)
-                continue;
+        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            auto* textBatch = dynamic_cast<TextRenderBatch*>(batch.get());
-            if(textBatch->getFont() == font && textBatch->getZIndex() == zIndex) {
-                textBatch->addText(position, size, color, text, font, normalized);
-                added = true;
-                break;
-            }
+        for (auto &batch: quadBatches) {
+            batch.start();
+            batch.render(screenWidth, screenHeight, camera);
         }
+        quadBatches.clear();
 
+        GLenum err;
+        if ((err = glGetError()) != GL_NO_ERROR) {
+            AV_CORE_ERROR("OpenGL error: {0}", err);
+        }
     }
 
     void static init() {
@@ -124,32 +83,25 @@ private:
             exit(1);
         }
 
-        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &maxTextureSlots);
-        AV_CORE_INFO("Texture units available on hardware: {0}.", maxTextureSlots);
+        int textureUnits;
+        glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureUnits);
+        AV_CORE_INFO("Texture units available on hardware: {0}.", textureUnits);
 
         glDisable(GL_DEPTH_TEST);
-
         // enable transparency
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        // nu stiu ce face asta dar asa scrie in documentatie
-        glEnable(GL_CULL_FACE);
-
         // Enable Anti-Aliasing - todo: implement with framebuffer - also check window class when removing this, line 40
         glEnable(GL_MULTISAMPLE);
 
+        // Initialize FreeType
+        FT_Library ft;
+        if (FT_Init_FreeType(&ft)) {
+            std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+            return;
+        }
+
         AssetPool::loadBundle("resources");
     }
-
-    int32_t maxBatchSize = 0;
-    glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
-
-    std::vector<Scope<RenderBatch>> renderBatches;
-
-    inline static bool initialized = false;
-    inline static int maxTextureSlots = 0;
-
-    friend class ImGuiLayer;
 };
-
