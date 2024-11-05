@@ -3,14 +3,12 @@
 #include "RenderBatch.hpp"
 #include "avalon/utils/AssetPool.hpp"
 
+enum Shape : uint32_t {
+    QUAD,
+    CIRCLE
+};
 
 class Renderer {
-    int32_t maxBatchSize = 0;
-    std::vector<RenderBatch> quadBatches;
-    glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
-
-    inline static bool initialized = false;
-
 public:
     Renderer() = default;
 
@@ -22,18 +20,17 @@ public:
     }
 
 
-    void drawQuad(const glm::vec3 &position, const glm::vec2 &scale, const glm::vec4 color, const Sprite &sprite = Sprite(nullptr), bool normalized = false) {
+    void draw(const glm::vec3 &position, const glm::vec2 &scale, float rotation, Shape shape, const glm::vec4 color, const Ref<Texture> &texture, const TextureCoords &texCoords) {
 
         float zIndex = position.z;
 
         bool added = false;
-        for (auto &x: quadBatches) {
+        for (auto &x: batches) {
             if (!x.isFull() && x.getZIndex() == zIndex) {
-                auto &texture = sprite.texture;
 
                 // if quad has no texture
                 if (texture == nullptr || (x.hasTexture(texture) || x.hasTextureRoom())) {
-                    x.addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
+                    x.addShape(position, scale, rotation, shape, color, texture, texCoords);
                     added = true;
                     break;
                 }
@@ -41,10 +38,18 @@ public:
         }
 
         if (!added) {
-            quadBatches.emplace_back(maxBatchSize, AssetPool::getBundle("resources")->getShader("render"), zIndex);
-            quadBatches.back().addQuad(position, scale, color, sprite.texture, sprite.texCoords, normalized);
+            batches.emplace_back(maxBatchSize, AssetPool::getBundle("resources")->getShader("render"), zIndex);
+            batches.back().addShape(position, scale, rotation, shape, color, texture, texCoords);
         }
 
+    }
+
+    void drawQuad(const glm::vec3 &position, const glm::vec2 size, const glm::vec4 &color, const Sprite& sprite = Sprite(nullptr)) {
+        draw(position, size, 0.0f, Shape::QUAD, color, sprite.texture, sprite.texCoords);
+    }
+
+    void drawRotatedQuad(const glm::vec3 &position, const glm::vec2 size, float rotation, const glm::vec4 &color, const Sprite& sprite = Sprite(nullptr)) {
+        draw(position, size, rotation, Shape::QUAD, color, sprite.texture, sprite.texCoords);
     }
 
     void drawText(const glm::vec3 &position, const glm::ivec2 &size, const glm::vec4 &color, const Font &font, const std::string &text, bool normalized = false) {
@@ -56,7 +61,7 @@ public:
 
     void flush(int screenWidth, int screenHeight, Camera &camera) {
 
-        std::sort(quadBatches.begin(), quadBatches.end(),
+        std::sort(batches.begin(), batches.end(),
                   [](const RenderBatch &a, const RenderBatch &b) {
                       return a.getZIndex() > b.getZIndex();
                   });
@@ -64,11 +69,11 @@ public:
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        for (auto &batch: quadBatches) {
+        for (auto &batch: batches) {
             batch.start();
             batch.render(screenWidth, screenHeight, camera);
         }
-        quadBatches.clear();
+        batches.clear();
 
         GLenum err;
         if ((err = glGetError()) != GL_NO_ERROR) {
@@ -104,4 +109,11 @@ public:
 
         AssetPool::loadBundle("resources");
     }
+
+private:
+    int32_t maxBatchSize = 0;
+    std::vector<RenderBatch> batches;
+    glm::vec4 clearColor{1.0f, 1.0f, 1.0f, 1.0f};
+
+    inline static bool initialized = false;
 };
